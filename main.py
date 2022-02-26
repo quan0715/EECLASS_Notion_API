@@ -1,7 +1,6 @@
-from PyNotion.page import Page
+from PyNotion.block import *
 from PyNotion.object import BlockObject
 from PyNotion.NotionClient import Notion
-from PyNotion.block import *
 import requests
 from bs4 import BeautifulSoup
 import re
@@ -17,6 +16,7 @@ headers = {
     "Cookie": "noteFontSize=100; noteExpand=0; defaultPlayer=html5; _ga_8E1C17R08X=GS1.1.1638244341.1.1.1638244589.0; _ga=GA1.3.802723757.1638244342; player.volume=1; PHPSESSID=4cufub5ft05u6ige0b1bjukq46; accesstoken=978662802; timezone=%2B0800; locale=zh-tw",
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36 Edg/97.0.1072.62",
 }
+
 
 
 def login(session):

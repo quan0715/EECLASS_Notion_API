@@ -79,19 +79,19 @@ def make_template(content):
     def check_length(word):
         if len(word) > 2000:
             for t in [word[c:c + 1999] for c in range(0, len(word), 1999)]:
-                template.append(BlockObject("paragraph", traces=dict(plain_text=t)).template)
+                template.append(BlockObject("paragraph", traces=dict(content=t)).template)
         else:
-            template.append(BlockObject("paragraph", traces=dict(plain_text=word)).template, )
+            template.append(BlockObject("paragraph", traces=dict(content=word)).template, )
 
     for k, v in content.items():
         if k != '附件':
-            template.append(BlockObject("heading_3", traces=dict(plain_text=k)).template, )
+            template.append(BlockObject("heading_3", traces=dict(content=k)).template, )
             check_length(v)
         else:
-            template.append(BlockObject("heading_3", traces=dict(plain_text=k)).template, )
+            template.append(BlockObject("heading_3", traces=dict(content=k)).template, )
             for a in v:
                 template.append(
-                    BlockObject("paragraph", traces=dict(plain_text=f"{a['名稱']}", link={"url": a['連結']})).template, )
+                    BlockObject("paragraph", traces=dict(content=f"{a['名稱']}", link=a['連結'])).template, )
     return template
 
 

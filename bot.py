@@ -1,6 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
 import re
+
+
 class Bot:
     URL = "https://ncueeclass.ncu.edu.tw"
     YEAR = 2022
@@ -18,6 +20,7 @@ class Bot:
         self.session = requests.Session()
         self.account = ""
         self.password = ""
+
     def login(self, account, password):
         self.account = account
         self.password = password

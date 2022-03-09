@@ -28,7 +28,7 @@ class Bot:
             "_fmSubmit": "yes",
             "formId": "login_form",
             "account": f"{self.account}",
-            "password": f"f{self.password}"
+            "password": f"{self.password}"
         }
         url = Bot.URL + "/index/login"
         ## get csrf-t code
@@ -37,12 +37,20 @@ class Bot:
         code = Soup.select("#csrf-t > div > input[type=hidden]")
         data['csrf-t'] = code[0]['value']
         result = self.session.post(url, data=data, headers=Bot.headers)
-        return result
+        if result.json()['ret']['status'] == 'true':
+            print("帳號登入成功")
+            return True
+        else:
+            print("登入資訊有誤")
+            return False
 
     def get_latest_bulletins(self):
+        print("正在抓取最近公告......")
         url = Bot.URL + "/dashboard/latestBulletin"
         result_list = []
-        for page_index in range(1, 3):
+        page_index = 1
+        while True:
+            print(f"page {page_index}")
             parameter = {
                 "category": "all",
                 "page": f"{page_index}",
@@ -50,8 +58,7 @@ class Bot:
             }
             r = self.session.get(url, headers=Bot.headers, params=parameter)
             soup = BeautifulSoup(r.text, 'lxml')
-            s = soup.select(
-                '#bulletinMgrTable > tbody > tr > td > div > div.fs-singleLineText.afterText > div.text-overflow > a')
+            s = soup.select('#bulletinMgrTable > tbody > tr > td > div > div.fs-singleLineText.afterText > div.text-overflow > a')
             pattern = r"id=[0-9]+"
             title = soup.select('#bulletinMgrTable > tbody > tr > td.text-center.col-char7 > div > a > span')
             for j, t in zip(s, title):
@@ -61,6 +68,11 @@ class Bot:
                     'link': j['data-url'],
                     'index': re.search(pattern, j['data-url']).group().strip('id=')
                 })
+            if len(title) <= 20:
+                break
+            page_index += 1
+
+        print("最近公告爬取完畢......")
         return result_list
 
     def get_bulletin_content(self, target):
@@ -72,8 +84,10 @@ class Bot:
         content = soup.select('div.fs-text-break-word')
         content = '\n'.join([c.text for c in content])
         attach = soup.select('div.text > a')
-        attach = [{'名稱': a.text, '連結': "https://ncueeclass.ncu.edu.tw" + a['href'], '檔案大小': a.span.text} for a in
-                  attach]
+        attach = [{
+            '名稱': a.text, '連結': "https://ncueeclass.ncu.edu.tw" + a['href'], '檔案大小': a.span.text
+             } for a in attach
+        ]
         result = {
             '類型': '公告',
             '連結': url,

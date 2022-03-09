@@ -95,6 +95,7 @@ def make_template(content):
     return template
 
 
+
 def post(content, database):
     keys = database.properties.keys()
     p = {}
@@ -104,12 +105,8 @@ def post(content, database):
         except:
             print(f"property {k} dose not defined")
     new_post = notion.create_new_page(database=database, data=p)
-    print(new_post)
-    #print(p.json())
     if new_post:
-        new_post.update_page({
-            "icon": {"type": "emoji","emoji": "🐶"},
-        })
+        new_post.update_emoji("🐶")
         new_post.append_block(children_array=make_template(content['內容']))
 
 
@@ -178,7 +175,7 @@ def get_bulletin_content(session, target):
     content = soup.select('div.fs-text-break-word')
     content = '\n'.join([c.text for c in content])
     attach = soup.select('div.text > a')
-    attach = [{'名稱': a.text, '連結': "https://ncueeclass.ncu.edu.tw" + a['href'], '檔案大小': a.span.text} for a in attach]
+    attach = [{'名稱': a.text, '連結': url + a['href'], '檔案大小': a.span.text} for a in attach]
     result = {
         '類型': '公告',
         '連結': url,
@@ -203,9 +200,9 @@ def get_homework_content(session, homework):
     for t, c in zip(title, content):
         if t.text == '附件':
             results[t.text] = []
-            for ul in c.findAll('ul'):
+            for li in c.findAll('li'):
                 results[t.text].append(
-                    {"名稱": ul.text, "連結": "https://ncueeclass.ncu.edu.tw" + ul.find('a')['href']})
+                    {"名稱": li.text, "連結": "https://ncueeclass.ncu.edu.tw" + li.find('a')['href']})
         else:
             results[t.text] = c.text
     homework['內容'] = results
@@ -257,8 +254,7 @@ def get_questionnaire_contents(session, questionnaire):
 AUTH = "secret_8JtNxNiUCCWPRhFqzl1e2juzxoz96dyjYWubDLbNchy"
 notion = Notion(AUTH)
 database = notion.fetch_databases("EECLASS")
-issue_id = [r['properties']['ID']['rich_text'][0]['plain_text'] for r in database.results]  # print(issue_id)
-# print(issue_id)
+issue_id = database.results['ID']# print(issue_id)
 s = requests.Session()
 login(s)
 import threading

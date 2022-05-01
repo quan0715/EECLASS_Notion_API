@@ -1,10 +1,10 @@
 from bot import Bot
 import threading
 
-NOTION_AUTH = "Notion_integration_token"
+NOTION_AUTH = "secret_8JtNxNiUCCWPRhFqzl1e2juzxoz96dyjYWubDLbNchy"
 ACCOUNT = "EECLASS的帳號"
 PASSWORD = "EECLASS的密碼"
-DATABASE_NAME = "Database名稱"
+DATABASE_NAME = "TEST"
 
 b = Bot()
 b.set_emoji("💩") #可以自行修改

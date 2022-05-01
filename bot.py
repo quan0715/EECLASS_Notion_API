@@ -59,7 +59,7 @@ class Bot:
         try:
             print("正在和Notion做連線")
             self.notion = Notion(AUTH)
-            self.database = self.notion.fetch_databases("EECLASS")
+            self.database = self.notion.fetch_databases(database_name)
             self.issue_id = self.database.results['ID']  # 已經update的事件ID
             print(f"成功連線到 {database_name} Notion資料庫")
 
@@ -76,7 +76,7 @@ class Bot:
         return page_list
 
     def get_latest_bulletins(self):
-        print("正在抓取最近公告......")
+        print("正在抓取最新公告......")
         url = "/dashboard/latestBulletin"
         page_list = self.get_page_url(url)
         result_list = []
@@ -110,7 +110,7 @@ class Bot:
         for t in threadings:
             t.join()
 
-        print("最近公告爬取完畢......")
+        print("最新公告爬取完畢......")
         return result_list
 
     def get_bulletin_content(self, target):
@@ -141,7 +141,7 @@ class Bot:
         return result
 
     def get_latest_events(self):
-        print("爬取最近事件......")
+        print("爬取最新事件......")
         url = "/dashboard/latestEvent"
         results = []
         parmas = {
@@ -212,15 +212,12 @@ class Bot:
             r = self.get_bulletin_content(target)
             print(f'更新事件:{r["標題"]}')
             self.post(r)
-
         for b in self.all_bulletins:
             if b['index'] not in self.issue_id:
                 threadings.append(threading.Thread(target=post_issue, args=(b,)))
                 threadings[-1].start()
-
         for t in threadings:
             t.join()
-
         print("最新公告更新完成")
 
     def make_template(self,content):

@@ -49,4 +49,8 @@ DATABASE_NAME = "Database的名稱"
 接下來執行 `run.py`檔案即可
 
     python3 run.py
+
+
+### 未完成
+目前只有做到最新事件與最新公告，未來可能會往教材的地方邁進。
     

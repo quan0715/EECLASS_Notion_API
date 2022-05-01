@@ -4,19 +4,19 @@ from PyNotion.NotionClient import Notion
 import requests
 from bs4 import BeautifulSoup
 import re
+import threading
 
 YEAR = 2022
 url = "https://ncueeclass.ncu.edu.tw"
 headers = {
     "Accept": "application/json, text/javascript, */*; q=0.01",
     "Accept-Encoding": "gzip, deflate, br",
-    #"Connection": "keep-alive",
+    # "Connection": "keep-alive",
     "Content-Length": "142",
     "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
     "Cookie": "noteFontSize=100; noteExpand=0; defaultPlayer=html5; _ga_8E1C17R08X=GS1.1.1638244341.1.1.1638244589.0; _ga=GA1.3.802723757.1638244342; player.volume=1; PHPSESSID=4cufub5ft05u6ige0b1bjukq46; accesstoken=978662802; timezone=%2B0800; locale=zh-tw",
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36 Edg/97.0.1072.62",
 }
-
 
 
 def login(session):
@@ -40,7 +40,8 @@ def get_all_courses(session):
     dashboard_url = "https://ncueeclass.ncu.edu.tw/dashboard"
     r = session.get(dashboard_url, headers=headers)
     soup = BeautifulSoup(r.text, 'lxml')
-    selects = soup.select('#xbox2-inline > div.module.app-dashboard.app-dashboard-show > div > div.fs-block-body > div > ul > li > div > div > div > div > div.fs-label > a')
+    selects = soup.select(
+        '#xbox2-inline > div.module.app-dashboard.app-dashboard-show > div > div.fs-block-body > div > ul > li > div > div > div > div > div.fs-label > a')
     results = [{
         'title': i.text.strip('\n').strip(' ').strip('\n'),
         'link': url + i['href'],
@@ -76,6 +77,7 @@ def get_bulletins(session, target):
 
 def make_template(content):
     template = []
+
     def check_length(word):
         if len(word) > 2000:
             for t in [word[c:c + 1999] for c in range(0, len(word), 1999)]:
@@ -93,7 +95,6 @@ def make_template(content):
                 template.append(
                     BlockObject("paragraph", traces=dict(content=f"{a['名稱']}", link=a['連結'])).template, )
     return template
-
 
 
 def post(content, database):
@@ -235,11 +236,10 @@ def update_events(session):
         post(result, database)
 
     r = get_latest_events(s)
-    import threading
     threadings = []
     for h in r:
         if h['類型'] == '作業' and h['ID'] not in issue_id:
-            print(f'更新事件:{ h["標題"]}')
+            print(f'更新事件:{h["標題"]}')
             threadings.append(threading.Thread(target=all_events, args=(h,)))
             threadings[-1].start()
 
@@ -254,10 +254,11 @@ def get_questionnaire_contents(session, questionnaire):
 AUTH = "secret_8JtNxNiUCCWPRhFqzl1e2juzxoz96dyjYWubDLbNchy"
 notion = Notion(AUTH)
 database = notion.fetch_databases("EECLASS")
-issue_id = database.results['ID']# print(issue_id)
+issue_id = database.results['ID']  # print(issue_id)
 s = requests.Session()
 login(s)
 import threading
+
 b = threading.Thread(target=update_bulletins, args=(s,))
 e = threading.Thread(target=update_events, args=(s,))
 b.start()

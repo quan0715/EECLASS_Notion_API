@@ -2,9 +2,9 @@ from bot import Bot
 import threading
 
 NOTION_AUTH = "secret_8JtNxNiUCCWPRhFqzl1e2juzxoz96dyjYWubDLbNchy"
-ACCOUNT = "EECLASS的帳號"
-PASSWORD = "EECLASS的密碼"
-DATABASE_NAME = "TEST"
+ACCOUNT = "109502563"
+PASSWORD = "H125920690"
+DATABASE_NAME = "EECLASS"
 
 b = Bot()
 b.set_emoji("💩") #可以自行修改

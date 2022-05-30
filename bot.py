@@ -55,10 +55,10 @@ class Bot:
             print("登入資訊有誤")
             return False
 
-    def connect_notion_database(self, AUTH, database_name):
+    def connect_notion_database(self, auth, database_name):
         try:
             print("正在和Notion做連線")
-            self.notion = Notion(AUTH)
+            self.notion = Notion(auth)
             self.database = self.notion.fetch_databases(database_name)
             self.issue_id = self.database.results['ID']  # 已經update的事件ID
             print(f"成功連線到 {database_name} Notion資料庫")
@@ -123,7 +123,11 @@ class Bot:
         link = []
         for c in content:
             for l in c.findAll('a'):
-                link.append({'名稱': l.text, '連結': l['href']})
+                try:
+                    link.append({'名稱': l.text, '連結': l['href']})
+                except:
+                    pass
+
         content = '\n'.join([c.text for c in content])
         attach = soup.select('div.text > a')
         attach = [{ '名稱': a.text, '連結': "https://ncueeclass.ncu.edu.tw" + a['href'], '檔案大小': a.span.text} for a in attach ]

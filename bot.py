@@ -1,5 +1,4 @@
-from PyNotion.block import *
-from PyNotion.object import BlockObject
+from PyNotion.Object import *
 from PyNotion.NotionClient import Notion
 import requests
 from bs4 import BeautifulSoup
@@ -57,11 +56,11 @@ class Bot:
 
     def connect_notion_database(self, auth, database_name):
         try:
-            print("正在和Notion做連線")
+            # print("正在和Notion做連線")
             self.notion = Notion(auth)
             self.database = self.notion.fetch_databases(database_name)
-            self.issue_id = self.database.results['ID']  # 已經update的事件ID
-            print(f"成功連線到 {database_name} Notion資料庫")
+            self.issue_id = self.database.query_database_dataframe()['ID']  # 已經update的事件ID
+            # print(f"成功連線到 {database_name} Notion資料庫")
 
         except:
             print("資訊有誤請重新嘗試")
@@ -193,68 +192,80 @@ class Bot:
         return homework
 
     def update_events(self):
-        def all_events(h):
-            result = self.get_homework_content(h)
-            self.post(result)
+        def post(homework):
+            self.post(self.get_homework_content(homework))
+
+        def update(homework, index):
+            self.update(self.get_homework_content(homework), index)
 
         r = self.get_latest_events()
         threadings = []
         for h in r:
-            if h['類型'] == '作業' and h['ID'] not in self.issue_id:
-                print(f'更新事件:{h["標題"]}')
-                threadings.append(threading.Thread(target=all_events, args=(h,)))
-                threadings[-1].start()
+            if h['類型'] == '作業':
+                if h['ID'] not in self.issue_id:
+                    print(f'新增事件:{h["標題"]}')
+                    t = threading.Thread(target=post, args=(h,))
+                    t.start()
+                    threadings.append(t)
+                else:
+                    print(f'更新事件:{h["標題"]}')
+                    t = threading.Thread(target=update, args=(h, h['ID']))
+                    t.start()
+                    threadings.append(t)
         for t in threadings:
             t.join()
 
     def update_bulletin(self):
         print("開始更新最新公告")
         self.all_bulletins = self.get_latest_bulletins()
-        self.issue_id = self.database.results['ID']
+        self.issue_id = self.database.query_database_dataframe()['ID']
         threadings = []
-        def post_issue(target):
-            r = self.get_bulletin_content(target)
-            print(f'更新事件:{r["標題"]}')
-            self.post(r)
-        for b in self.all_bulletins:
-            if b['index'] not in self.issue_id:
-                threadings.append(threading.Thread(target=post_issue, args=(b,)))
-                threadings[-1].start()
+
+        for target in self.all_bulletins:
+            if target['index'] not in self.issue_id:
+                print(f'更新事件:{target["title"]}')
+                t = threading.Thread(target=lambda b: self.post(self.get_bulletin_content(b)), args=(target,))
+                t.start()
+                threadings.append(t)
         for t in threadings:
             t.join()
         print("最新公告更新完成")
 
-    def make_template(self,content):
-        template = []
-        def check_length(word):
-            if len(word) > 2000:
-                for t in [word[c:c + 1999] for c in range(0, len(word), 1999)]:
-                    template.append(BlockObject("paragraph", traces=dict(content=t)).template)
-            else:
-                template.append(BlockObject("paragraph", traces=dict(content=word)).template, )
-
+    @classmethod
+    def make_template(cls, content):
+        children_list = []
         for k, v in content.items():
-            template.append(BlockObject("heading_3", traces=dict(content=k)).template, )
+            children_list.append(Blocks.Heading(3, Blocks.Text(content=k)))
             if k != '附件' and k != '連結':
-                check_length(v)
+                words = [v[s:s + 1999] for s in range(0, len(v), 1999)]
+                text_list = [Blocks.Text(content=w) for w in words]
+                children_list.append(Blocks.Paragraph(*text_list))
             else:
-                for a in v:
-                    template.append(BlockObject("paragraph", traces=dict(content=f"{a['名稱']}", link=a['連結'])).template, )
-        return template
+                children_list.extend([Blocks.Paragraph(Blocks.Text(f"{a['名稱']}", a['連結'])) for a in v])
 
-    def post(self,content):
+        return ChildrenObject(*children_list)
+
+    def post(self, content):
         keys = self.database.properties.keys()
-        p = {}
-        for k in keys:
-            try:
-                p[k] = content[k]
-            except:
-                pass
-                #print(f"property {k} dose not defined")
+        p = {k : content[k] for k in keys if k in content.keys()}
         new_post = self.notion.create_new_page(database=self.database, data=p)
         if new_post:
             new_post.update_emoji(self.emoji)
-            new_post.append_block(children_array=self.make_template(content['內容']))
+            new_post.append_children(data=Bot.make_template(content['內容']))
 
-    def set_emoji(self,emoji):
+    def update(self, content,index):
+        page = self.database.query_database_page_list(
+            query=Query(
+                filters=PropertyFilter("ID",Text.Type.rich_text,Text.Filter.contains,index)
+            )
+        )[0]
+        keys = self.database.properties.keys()
+        data = {k: content[k] for k in keys if k in content.keys()}
+        #print(data)
+        page.update(self.database.post_template(data))
+        page.update_emoji(self.emoji)
+        page.append_children(data=self.make_template(content['內容']))
+
+
+    def set_emoji(self, emoji):
         self.emoji = emoji

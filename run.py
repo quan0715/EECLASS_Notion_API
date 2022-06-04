@@ -1,11 +1,15 @@
 from bot import Bot
 import threading
+from PyNotion import *
 
 NOTION_AUTH = "secret_8JtNxNiUCCWPRhFqzl1e2juzxoz96dyjYWubDLbNchy"
 ACCOUNT = "109502563"
 PASSWORD = "H125920690"
 DATABASE_NAME = "EECLASS"
 
+# notion = Notion(NOTION_AUTH)
+# db = notion.fetch_databases(DATABASE_NAME)
+# print(db.query_database_dataframe())
 b = Bot()
 b.set_emoji("💩") #可以自行修改
 b.login(ACCOUNT, PASSWORD)  # 登入EECLASS

@@ -1,4 +1,3 @@
-from bot import Bot
 import threading
 from PyNotion.NotionClient import Notion
 NOTION_AUTH = "secret_8JtNxNiUCCWPRhFqzl1e2juzxoz96dyjYWubDLbNchy"
@@ -7,8 +6,19 @@ NOTION_AUTH = "secret_8JtNxNiUCCWPRhFqzl1e2juzxoz96dyjYWubDLbNchy"
 DATABASE_NAME = "EECLASS"
 test = Notion(auth=NOTION_AUTH)
 db = test.fetch_databases(DATABASE_NAME)
+#print(db.results[0].retrieve_page())
+# pl = db.query_database_dataframe(query={
+#     "filter": {
+#         "property": "課程",
+#         "select": {"equals": "程式語言 Principles of Programming Languages"}
+#     }
+# })
+import pandas as pd
+#print(pl)
+print(pd.DataFrame(db.query_database_dataframe()))
 
-print(len(db.results['ID']))
+
+#print(len(db.results['ID']))
 #print(index)
 #print(sorted(index),len(index))
 #b = Bot()

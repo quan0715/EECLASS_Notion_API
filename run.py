@@ -1,23 +1,30 @@
 from bot import Bot
 import threading
 from PyNotion import *
+from PyNotion.NotionClient import Notion
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
-NOTION_AUTH = "secret_8JtNxNiUCCWPRhFqzl1e2juzxoz96dyjYWubDLbNchy"
-ACCOUNT = "109502563"
-PASSWORD = "H125920690"
-DATABASE_NAME = "EECLASS"
+NOTION_AUTH = os.getenv("NOTION_AUTH")
+ACCOUNT = os.getenv("ACCOUNT")
+PASSWORD = os.getenv("PASSWORD")
+DATABASE_NAME = os.getenv("DATABASE_NAME")
 
-# notion = Notion(NOTION_AUTH)
-# db = notion.fetch_databases(DATABASE_NAME)
-# print(db.query_database_dataframe())
-b = Bot()
-b.set_emoji("💩") #可以自行修改
-b.login(ACCOUNT, PASSWORD)  # 登入EECLASS
-b.connect_notion_database(NOTION_AUTH, DATABASE_NAME)  # 連線Notion資料庫
+# notion_bot = Notion(NOTION_AUTH)
+# eeclass_db = notion_bot.fetch_databases(DATABASE_NAME)
+eeclass_bot = Bot()
+eeclass_bot.login(ACCOUNT, PASSWORD)
+courses = eeclass_bot.retrieve_all_course(refresh=True, check=True)
+# courses[7].get_bulletin()
 
-t1 = threading.Thread(target= lambda : b.update_bulletin()) # 更新最新公告上去
-t2 = threading.Thread(target= lambda : b.update_events()) # 更新最新事件上去
-t1.start()
-t2.start()
-t1.join()
-t2.join()
+#print(eeclass_bot.get_latest_bulletins())
+#eeclass_bot.set_emoji("💩")  #可以自行修改
+
+
+# t1 = threading.Thread(target=lambda: b.update_bulletin())  # 更新最新公告上去
+# t2 = threading.Thread(target=lambda: b.update_events())  # 更新最新事件上去
+# t1.start()
+# t2.start()
+# t1.join()
+# t2.join()

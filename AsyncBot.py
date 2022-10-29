@@ -216,7 +216,10 @@ class Bulletin:
             for c in content:
                 for l in c.findAll('a'):
                     try:
-                        link.append({'名稱': l.text, '連結': l['href']})
+                        if not l['href'].startswith('https://'):
+                                l['href'] = "https://ncueeclass.ncu.edu.tw" + l['href']
+                        else:
+                            link.append({'名稱': l.text, '連結': l['href']})
                     except:
                         pass
 
@@ -225,14 +228,14 @@ class Bulletin:
             attach = [{'名稱': a.text, '連結': "https://ncueeclass.ncu.edu.tw" + a['href'], '檔案大小': a.span.text} for a in
                       attach]
             result = {
-                '類型': '公告',
-                '連結': self.url,
-                '標題': self.title,
-                '日期': {'start': f"{Bot.YEAR}-{detail[1].strip('公告日期 ')}"},
+                'type': '公告',
+                'url': self.url,
+                'title': self.title,
+                'date': {'start': f"{Bot.YEAR}-{detail[1].strip('公告日期 ')}"},
                 'ID': self.index,
-                '課程': detail[2].strip(' '),
+                'course': detail[2].strip(' '),
                 '發佈人': detail[3].strip(' by '),
-                '內容': {'公告內容': content, '附件': attach, '連結': link},
+                'content': {'公告內容': content, '附件': attach, '連結': link},
                 '人氣': detail[0].split(' ')[1],
             }
             print(f"{self.title} Finish")
@@ -296,7 +299,7 @@ class Homework:
                 date=dict(start=results['開放繳交'], end=results['繳交期限']),
                 content=results,
                 type='homework',
-                homework_id=self.index,
+                ID=self.index,
             )
             return self.details
 

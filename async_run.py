@@ -21,22 +21,23 @@ db = notion_bot.fetch_databases(DATABASE_NAME)
 def builtin_in_notion_template(db, target):
     return db.new_page(
         prop_value=PropertyValue(
-            TitleValue(key="標題", value=target['標題']),
-            SelectValue("課程", target['課程']),
-            SelectValue("類型", target['類型']),
+            TitleValue(key="標題", value=target['title']),
+            SelectValue("課程", target['course']),
+            SelectValue("類型", target['type']),
             TextValue("ID", target['ID']),
-            DateValue("日期", Date(**target['日期'])),
+            DateValue("日期", Date(**target['date'])),
+            UrlValue("連結", Url(url=target['url'])),
         ),
         children=Children(
-            CalloutBlock(f"發佈人 {target['發佈人']}  人氣 {target['人氣']}",color=Colors.Background.green),
+            CalloutBlock(f"發佈人 {target['發佈人']}  人氣 {target['人氣']}", color=Colors.Background.green),
             QuoteBlock(f"內容"),
-            ParagraphBlock(target['內容']["公告內容"]),
+            ParagraphBlock(target['content']["公告內容"]),
             ParagraphBlock(" "),
             QuoteBlock(f"連結"),
-            *[ParagraphBlock(TextBlock(content=l['名稱'], link=l['連結'])) for l in target['內容']['連結']],
+            *[ParagraphBlock(TextBlock(content=l['名稱'], link=l['連結'])) for l in target['content']['連結']],
             ParagraphBlock(" "),
             QuoteBlock(f"附件"),
-            *[ParagraphBlock(TextBlock(content=l['名稱'], link=l['連結'])) for l in target['內容']['附件']],
+            *[ParagraphBlock(TextBlock(content=l['名稱'], link=l['連結'])) for l in target['content']['附件']],
         ),
         icon=Emoji("🐶"),
     )
@@ -62,14 +63,16 @@ def homework_in_notion_template(db, target):
             TitleValue(key="標題", value=target['title']),
             SelectValue("課程", target['course']),
             SelectValue("類型", target['type']),
-            TextValue("ID", target['homework_id']),
+            TextValue("ID", target['ID']),
             DateValue("日期", Date(**target['date'])),
             UrlValue("連結", Url(url=target['url']))
         ),
         children=Children(*children_list),
         icon=Emoji("🐶"),
-        cover=File("https://images.pexels.com/photos/13010695/pexels-photo-13010695.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"),
+        cover=File(
+            "https://images.pexels.com/photos/13010695/pexels-photo-13010695.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"),
     )
+
 
 async def run():
     async with aiohttp.ClientSession() as session:
@@ -105,14 +108,24 @@ async def run():
     # db.post(new_page(target=builtins_list[0]))
     async with aiohttp.ClientSession() as session:
         # notion part
-        await db.async_clear(session)
-        tasks = [db.async_post(homework_in_notion_template(db, r), session) for r in bot.homeworks_detail_list]
+        df = db.query_database_dataframe()
+        index = df['ID']
+        # print(index)
+        # await db.async_clear(session)
+        tasks = []
+        for r in bot.homeworks_detail_list:
+            if r['ID'] not in index:
+                tasks.append(db.async_post(homework_in_notion_template(db, r), session))
         await asyncio.gather(*tasks)
-        tasks = [db.async_post(builtin_in_notion_template(db, r), session) for r in bot.bulletins_detail_list]
+        tasks = []
+        for r in bot.bulletins_detail_list:
+            if r['ID'] not in index:
+                tasks.append(db.async_post(builtin_in_notion_template(db, r), session))
         await asyncio.gather(*tasks)
+        # tasks = [db.async_post(builtin_in_notion_template(db, r), session) for r in bot.bulletins_detail_list]
+        # await asyncio.gather(*tasks)
         # tasks = [db.async_post(homework_in_notion_template(db, r), session) for r in bot.homeworks_detail_list]
         # tasks.extend([db.async_post(builtin_in_notion_template(db, r), session) for r in bot.bulletins_detail_list])
-
 
 
 if __name__ == '__main__':

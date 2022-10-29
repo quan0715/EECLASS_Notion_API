@@ -1,9 +1,7 @@
 from PyNotion.Object import *
 from PyNotion.NotionClient import Notion
-import requests
 from bs4 import BeautifulSoup
 import re
-import threading
 import os
 import json
 import aiohttp
@@ -12,8 +10,9 @@ from aiohttp import web
 from fake_user_agent import user_agent
 import re
 
+
 class Bot:
-    URL = "https://ncueeclass.ncu.edu.tw"
+    BASE_URL = "https://ncueeclass.ncu.edu.tw"
     YEAR = 2022
     ua = user_agent()
     headers = {
@@ -25,7 +24,11 @@ class Bot:
         self.session = session
         self.account = account
         self.password = password
-        self.course_list = []
+        self.courses_list: list[Course] = []
+        self.bulletins_list: list[Bulletin] = []
+        self.homeworks_list: list[Homework] = []
+        self.bulletins_detail_list: list[dict] = []
+        self.homeworks_detail_list: list[dict] = []
 
     async def login(self):
         data = {
@@ -37,8 +40,8 @@ class Bot:
             "account": f"{self.account}",
             "password": f"{self.password}",
         }
-        url = Bot.URL + "/index/login"
-        resp = await self.session.get(Bot.URL)
+        url = Bot.BASE_URL + "/index/login"
+        resp = await self.session.get(Bot.BASE_URL)
         # get csrf-t code
         # print("get csrf-t code")
         soup = BeautifulSoup(await resp.text(), 'lxml')
@@ -61,124 +64,65 @@ class Bot:
             print("wrong password or username")
             return False
 
-    # def connect_notion_database(self, auth, database_name):
-    #     try:
-    #         # print("正在和Notion做連線")
-    #         self.notion = Notion(auth)
-    #         self.database = self.notion.fetch_databases(database_name)
-    #         self.issue_id = self.database.query_database_dataframe()['ID']  # 已經update的事件ID
-    #         # print(f"成功連線到 {database_name} Notion資料庫")
-    #
-    #     except:
-    #         print("資訊有誤請重新嘗試")
+    async def pipline(self):
+        await self.retrieve_all_course(check=True, refresh=True)
+        await self.retrieve_all_homeworks()
+        await self.retrieve_all_homeworks_details()
+        await self.retrieve_all_bulletins()
+        await self.retrieve_all_bulletins_details()
+        # print(self.bulletins_list)
+        # print(self.homeworks_list)
+        # print(self.homeworks_detail_list)
+        # print(self.bulletins_detail_list)
 
-    async def retrieve_all_course(self, refresh: bool=False, check: bool=False):
-        self.course_list = await Course.retrieve_all(self, refresh, check)
-        return self.course_list
+    async def retrieve_all_course(self, refresh: bool = False, check: bool = False):
+        self.courses_list = await Course.retrieve_all(self, refresh, check)
+        return self.courses_list
 
     async def retrieve_all_bulletins(self):
-        pass
+        # tasks = [r.get_bulletin_page() for r in self.courses_list]
+        # await asyncio.gather(*tasks)
+        tasks = [r.get_all_bulletin_page() for r in self.courses_list]
+        course_bulletins_list = await asyncio.gather(*tasks)
+        self.bulletins_list = []
+        for cb in course_bulletins_list:
+            self.bulletins_list.extend(cb)
 
+        return self.bulletins_list
 
-    def get_latest_events(self):
-        print("爬取最新事件......")
-        url = "/dashboard/latestEvent"
-        results = []
-        parmas = {
-            "category": "all",
-            "page": "1",
-            "pageSize": "20",
-        }
-        r = self.session.get(Bot.URL + url, headers=self.headers, params=parmas)
-        print(r)
-        soup = BeautifulSoup(r.text, 'lxml')
-        s = soup.select('#recentEventTable > tbody > tr ')
-        for row in s:
-            r = row.findAll('td')
-            if len(r) == 3:
-                results.append({
-                    '標題': r[0].text,
-                    '連結': "https://ncueeclass.ncu.edu.tw" + r[0].div.a['href'],
-                    '課程': r[1].text,
-                    '課程連結': r[1].div.a['href'],
-                    '日期': r[2].text,
-                    '類型': '作業' if r[0].div.a['href'].find("homework") != -1 else '問卷',
-                    'ID': r[0].div.a['href'].split('/')[-1]
-                })
-        print("最近事件爬取完畢")
-        return results
+    async def retrieve_all_homeworks(self):
+        tasks = [r.get_all_homework_page() for r in self.courses_list]
+        course_homework_list = await asyncio.gather(*tasks)
+        self.homeworks_list = []
+        for ch in course_homework_list:
+            self.homeworks_list.extend(ch)
+        return self.homeworks_list
 
-    def get_homework_content(self, homework):
-        r = self.session.get(homework['連結'], headers=self.headers)
-        soup = BeautifulSoup(r.text, 'lxml')
-        dl = soup.select("dl")
-        title = dl[0].findAll('dt')
-        content = dl[0].findAll('dd')
-        results = {t.text : "" for t in title}
-        results['附件'] = []
-        results['連結'] = []
-        for t, c in zip(title, content):
-            if t.text == '附件':
-                for li in c.findAll('li'):
-                    results[t.text].append({"名稱": li.text, "連結": "https://ncueeclass.ncu.edu.tw" + li.find('a')['href']})
-            else:
-                for l in c.findAll('a'):
-                    results['連結'].append({"名稱": l.text, "連結": l['href']})
-                results[t.text] = c.text
-        homework['內容'] = results
-        homework['日期'] = {'start': results['開放繳交'], 'end': results['繳交期限']}
-        return homework
+    async def retrieve_all_bulletins_details(self):
+        tasks = [bu.retrieve() for bu in self.bulletins_list if isinstance(bu, Bulletin)]
+        self.bulletins_detail_list = await asyncio.gather(*tasks)
+        return self.bulletins_detail_list
 
-    def update_events(self):
-        def post(homework):
-            self.post(self.get_homework_content(homework))
-
-        def update(homework, index):
-            self.update(self.get_homework_content(homework), index)
-
-        r = self.get_latest_events()
-        threadings = []
-        for h in r:
-            if h['類型'] == '作業':
-                if h['ID'] not in self.issue_id:
-                    print(f'新增事件:{h["標題"]}')
-                    t = threading.Thread(target=post, args=(h,))
-                    t.start()
-                    threadings.append(t)
-                else:
-                    print(f'更新事件:{h["標題"]}')
-                    t = threading.Thread(target=update, args=(h, h['ID']))
-                    t.start()
-                    threadings.append(t)
-        for t in threadings:
-            t.join()
-
-    def update_bulletin(self):
-        print("開始更新最新公告")
-        self.all_bulletins = self.get_latest_bulletins()
-        self.issue_id = self.database.query_database_dataframe()['ID']
-        threadings = []
-
-        for target in self.all_bulletins:
-            if target['index'] not in self.issue_id:
-                print(f'更新事件:{target["title"]}')
-                t = threading.Thread(target=lambda b: self.post(self.get_bulletin_content(b)), args=(target,))
-                t.start()
-                threadings.append(t)
-        for t in threadings:
-            t.join()
-        print("最新公告更新完成")
+    async def retrieve_all_homeworks_details(self):
+        tasks = [hw.retrieve() for hw in self.homeworks_list if isinstance(hw, Homework)]
+        self.homeworks_detail_list = await asyncio.gather(*tasks)
+        return self.homeworks_detail_list
 
 
 class Course:
-    def __init__(self,bot, name: str, index: str):
+    BASE_URL = Bot.BASE_URL + '/course/'
+
+    def __init__(self, bot, name: str, index: str):
         self.bot = bot
         self.name = name
         self.index = index
-        self.url = "https://ncueeclass.ncu.edu.tw/course/" + index
-        self.bulletin_url = "https://ncueeclass.ncu.edu.tw/course/bulletin/" + index
-        self.bulletin_page_url = [self.bulletin_url]
-        self.bulletins = []
+        self.url = Course.BASE_URL + index
+        self.bulletin_page_url = Course.BASE_URL + "bulletin/" + index
+        self.bulletins_url_list = [self.bulletin_page_url]
+        self.bulletins: list[Bulletin] = []
+        self.homework_list_url = Course.BASE_URL + "homeworkList/" + index
+        self.homeworks_url = []
+        self.homeworks = []
 
     def __repr__(self):
         return f"{self.name}\n {self.url}\n"
@@ -192,14 +136,14 @@ class Course:
             url = "https://ncueeclass.ncu.edu.tw/dashboard"
             resp = await bot.session.get(url, headers=Bot.headers)
             soup = BeautifulSoup(await resp.text(), 'lxml')
-            result = soup.select("#currentTerm > div > ul > li > div > div > div> div > div.fs-label > a")
+            result = soup.select("div > ul > li > div > div > div> div > div.fs-label > a")
             courses = [dict(name=r.text.strip(), index=r['href'].split('/')[-1]) for r in result]
             with open("course_info.json", 'w') as f:
                 print(json.dumps(courses), file=f)
 
         courses_list = []
         for course in courses:
-            courses_list.append(Course(bot,course['name'], course['index']))
+            courses_list.append(Course(bot, course['name'], course['index']))
 
         if check:
             for c in courses_list:
@@ -207,28 +151,44 @@ class Course:
 
         return courses_list
 
-    async def get_bulletin_page(self):
-        async with self.bot.session.get(self.bulletin_url, headers=self.bot.headers) as resp:
+    async def get_all_bulletin_page(self) -> list:
+        async with self.bot.session.get(self.bulletin_page_url, headers=self.bot.headers) as resp:
+            soup = BeautifulSoup(await resp.text(), 'lxml')
+            b_list = soup.select(
+                "#bulletinMgrTable > tbody > tr > td > div > div.fs-singleLineText.afterText > div.text-overflow > a"
+            )
+            # pagination = list(set(pagination))
+            # if pagination:
+            #     for p in pagination:
+            # self.bulletins.append(self.bulletin_page_url + p)
+            self.bulletins = [Bulletin(bot=self.bot, link=p['data-url'],title=p['data-modal-title']) for p in b_list]
+            return self.bulletins
+
+    # async def get_all_bulletin_page(self):
+    #     task = [Bulletin.get_bulletin_page(url=url, bot=self.bot) for url in self.bulletins_url_list]
+    #     self.bulletins = await asyncio.gather(*task)
+    #     return self.bulletins
+
+    async def get_all_homework_page(self):
+        """ homework 暫且不會有選頁面的問題"""
+        async with self.bot.session.get(self.homework_list_url, headers=self.bot.headers) as resp:
             # print(self)
             soup = BeautifulSoup(await resp.text(), 'lxml')
-            pagination = soup.select("#xbox-inline > div.module.mod_bulletin.mod_bulletin-list > div.fs-pagination.clearfix > div > div > nav > ul > li > a")
-            pagination = [p['href'] for p in pagination]
-            pagination = list(set(pagination))
-            if pagination:
-                for p in pagination:
-                    self.bulletin_page_url.append(self.bulletin_url+p)
-
-    async def get_all_bulletin(self):
-        for url in self.bulletin_page_url:
-            async with self.bot.session.get(url,headers=self.bot.headers) as resp:
-                soup = BeautifulSoup(await resp.text(), 'lxml')
-                bulletins_list = soup.select(
-                    '#bulletinMgrTable > tbody > tr > td > div > div.fs-singleLineText.afterText > div.text-overflow > a'
+            soup_select = soup.select("#homeworkListTable > tbody > tr > td > div > div > div.text-overflow > a")
+            homework_link_list = [p['href'] for p in soup_select]
+            for homework in soup_select:
+                url = homework['href']
+                title = homework.find('span').text
+                self.homeworks.append(
+                    Homework(
+                        bot=self.bot,
+                        title=title,
+                        link=url,
+                        course=self
+                    )
                 )
-                for bulletins in bulletins_list:
-                    link = bulletins['data-url']
-                    title = bulletins.find('span').text
-                    self.bulletins.append(Bulletin(bot=self.bot, link=link, title=title))
+
+            return self.homeworks
 
 
 class Bulletin:
@@ -279,5 +239,80 @@ class Bulletin:
             self.details = result
             return result
 
+    # @classmethod
+    # async def get_bulletin_page(cls, url, bot) -> __class__:
+    #     async with bot.session.get(url, headers=bot.headers) as resp:
+    #         soup = BeautifulSoup(await resp.text(), 'lxml')
+    #         bulletins_list = soup.select(
+    #             '#bulletinMgrTable > tbody > tr > td > div > div.fs-singleLineText.afterText > div.text-overflow > a'
+    #         )
+    #         for bulletins in bulletins_list:
+    #             link = bulletins['data-url']
+    #             title = bulletins.find('span').text
+    #
+    #             self.bulletins.append(Bulletin(bot=self.bot, link=link, title=title))
+    #     return self.bulletins
+
+class Homework:
+    BaseURL = "https://ncueeclass.ncu.edu.tw/course/homework/"
+
+    def __init__(self, bot, title, link, course):
+        self.bot = bot
+        self.title = title
+        self.index = link.split('/')[-1]
+        self.course = course
+        self.url = self.BaseURL + self.index
+        self.details = {}
+
+    def __repr__(self):
+        return f"{self.course.name} : {self.title}"
+
+    async def retrieve(self) -> dict:
+        async with self.bot.session.get(self.url, headers=self.bot.headers) as resp:
+            soup = BeautifulSoup(await resp.text(), 'lxml')
+            dl = soup.select("dl")
+            title = dl[0].findAll('dt')
+            content = dl[0].findAll('dd')
+            results = {t.text: "" for t in title}
+            results['attach'] = []
+            results['link'] = []
+            for t, c in zip(title, content):
+                if t.text == '附件':
+                    for li in c.findAll('li'):
+                        results['attach'].append(
+                            {"title": li.text.strip(), "link": Bot.BASE_URL + li.find('a')['href']}
+                        )
+                    continue
+
+                for link in c.findAll('a'):
+                    results['link'].append({"title": link.text.strip(), "link": link['href']})
+                results[t.text] = c.text
+
+            self.details = dict(
+                title=self.title,
+                url=self.url,
+                course=self.course.name,
+                course_link=self.course.url,
+                date=dict(start=results['開放繳交'], end=results['繳交期限']),
+                content=results,
+                type='homework',
+                homework_id=self.index,
+            )
+            return self.details
 
 
+async def main():
+    async with aiohttp.ClientSession() as session:
+        # bot part
+        bot = Bot(session, "109502563", "H125920690")
+        await bot.login()
+        await bot.retrieve_all_course(check=True, refresh=True)
+        homeworks = await bot.retrieve_all_homeworks()
+        d = await bot.retrieve_all_homeworks_details()
+        #hw = homeworks[1]
+        # print(hw, type(hw), type(hw[0]))
+        # await bot.retrieve_all_homeworks_details()
+        # print(hw[0])
+        # print(await hw[0].retrieve())
+if __name__ == '__main__':
+    asyncio.run(main())

@@ -24,7 +24,7 @@ child = Children(
 #     # select=SelectProperty(),
 #     # multiselect=MultiSelectProperty(),
 #     # checkbox=CheckboxProperty(),
-#     # data=DataProperty(),
+#     # data=DateProperty(),
 #     # url=UrlProperty(),
 # )
 db = notion.fetch_databases("Test1")
@@ -42,8 +42,8 @@ new_post = db.new_page(
     # MultiSelectValue(key="multiselect", value=["1,2,3,4"]),
     CheckboxValue(key="checkbox", value=False),
     # CheckboxValue(key="checkbox", value=True)
-    DataValue(key="data", value=Data(start=datetime(2022, 8, 16, 21, 30), end=datetime(2022, 8, 17, 21, 30))),
-    # DataValue(key="data", value=Data(start="2022-08-16T21:00", end="2022-08-17T21:00")),
+    DateValue(key="data", value=Date(start=datetime(2022, 8, 16, 21, 30), end=datetime(2022, 8, 17, 21, 30))),
+    # DateValue(key="data", value=Date(start="2022-08-16T21:00", end="2022-08-17T21:00")),
     UrlValue(key="url", value=Url("https://developers.notion.com/reference/database")),
     # UrlValue(key="url", value="https://developers.notion.com/reference/database"),
 )

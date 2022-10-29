@@ -306,9 +306,10 @@ async def main():
         # bot part
         bot = Bot(session, "109502563", "H125920690")
         await bot.login()
-        await bot.retrieve_all_course(check=True, refresh=True)
-        homeworks = await bot.retrieve_all_homeworks()
-        d = await bot.retrieve_all_homeworks_details()
+        await bot.pipline()
+        # await bot.retrieve_all_course(check=True, refresh=True)
+        # homeworks = await bot.retrieve_all_homeworks()
+        # await bot.retrieve_all_homeworks_details()
         #hw = homeworks[1]
         # print(hw, type(hw), type(hw[0]))
         # await bot.retrieve_all_homeworks_details()

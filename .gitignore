@@ -2,3 +2,4 @@
 .env
 .test.py
 ./__pycache__/
+./eeclass_notion_app/

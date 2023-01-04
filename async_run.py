@@ -8,14 +8,14 @@ from dotenv import load_dotenv
 import sys
 from config import get_config
 
-load_dotenv()
-NOTION_AUTH = os.getenv("NOTION_AUTH")
-config_file = get_config()
-ACCOUNT = config_file['STUDENT_ID']
-PASSWORD = config_file['ACCOUNT']
-DATABASE_NAME = config_file['DATABASE_NAME']
-notion_bot = Notion(NOTION_AUTH)
-db = notion_bot.fetch_databases(DATABASE_NAME)
+# load_dotenv()
+# NOTION_AUTH = os.getenv("NOTION_AUTH")
+# config_file = get_config()
+# ACCOUNT = config_file['STUDENT_ID']
+# PASSWORD = config_file['ACCOUNT']
+# DATABASE_NAME = config_file['DATABASE_NAME']
+# notion_bot = Notion(NOTION_AUTH)
+# db = notion_bot.fetch_databases(DATABASE_NAME)
 
 
 def builtin_in_notion_template(db, target):
@@ -74,7 +74,7 @@ def homework_in_notion_template(db, target):
     )
 
 
-async def run():
+async def run(ACCOUNT, PASSWORD, db):
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
         # bot part
         bot = Bot(session, ACCOUNT, PASSWORD)
@@ -127,8 +127,19 @@ async def run():
         # tasks = [db.async_post(homework_in_notion_template(db, r), session) for r in bot.homeworks_detail_list]
         # tasks.extend([db.async_post(builtin_in_notion_template(db, r), session) for r in bot.bulletins_detail_list])
 
+def build():
+    load_dotenv()
+    NOTION_AUTH = os.getenv("NOTION_AUTH")
+    config_file = get_config()
+    ACCOUNT = config_file['ACCOUNT']
+    PASSWORD = config_file['PASSWORD']
+    DATABASE_NAME = config_file['DATABASE_NAME']
+    notion_bot = Notion(NOTION_AUTH)
+    db = notion_bot.fetch_databases(DATABASE_NAME)
+    asyncio.run(run(ACCOUNT, PASSWORD, db))
 
 if __name__ == '__main__':
     #policy = asyncio.MAX
     #asyncio.set_event_loop_policy(policy)
-    asyncio.run(run())
+    build()
+    # asyncio.run(run())

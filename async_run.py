@@ -8,15 +8,6 @@ from dotenv import load_dotenv
 import sys
 from config import get_config
 
-# load_dotenv()
-# NOTION_AUTH = os.getenv("NOTION_AUTH")
-# config_file = get_config()
-# ACCOUNT = config_file['STUDENT_ID']
-# PASSWORD = config_file['ACCOUNT']
-# DATABASE_NAME = config_file['DATABASE_NAME']
-# notion_bot = Notion(NOTION_AUTH)
-# db = notion_bot.fetch_databases(DATABASE_NAME)
-
 
 def builtin_in_notion_template(db, target):
     return db.new_page(
@@ -74,10 +65,10 @@ def homework_in_notion_template(db, target):
     )
 
 
-async def run(ACCOUNT, PASSWORD, db):
+async def run(account, password, db):
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
         # bot part
-        bot = Bot(session, ACCOUNT, PASSWORD)
+        bot = Bot(session, account, password)
         await bot.login()
         await bot.retrieve_all_course(check=True, refresh=True)
         await bot.retrieve_all_bulletins()
@@ -85,7 +76,6 @@ async def run(ACCOUNT, PASSWORD, db):
         await bot.retrieve_all_homeworks()
         await bot.retrieve_all_homeworks_details()
         # await bot.pipline()
-        #
         # c = Course(bot, "編譯器 Compiler", "15581")
         # print(await c.get_all_bulletin_page())
         # await c.get_all_bulletin()
@@ -127,16 +117,17 @@ async def run(ACCOUNT, PASSWORD, db):
         # tasks = [db.async_post(homework_in_notion_template(db, r), session) for r in bot.homeworks_detail_list]
         # tasks.extend([db.async_post(builtin_in_notion_template(db, r), session) for r in bot.bulletins_detail_list])
 
+
 def build():
     load_dotenv()
-    NOTION_AUTH = os.getenv("NOTION_AUTH")
+    auth = os.getenv("NOTION_AUTH")
     config_file = get_config()
-    ACCOUNT = config_file['ACCOUNT']
-    PASSWORD = config_file['PASSWORD']
-    DATABASE_NAME = config_file['DATABASE_NAME']
-    notion_bot = Notion(NOTION_AUTH)
-    db = notion_bot.fetch_databases(DATABASE_NAME)
-    asyncio.run(run(ACCOUNT, PASSWORD, db))
+    account = config_file['ACCOUNT']
+    password = config_file['PASSWORD']
+    db_name = config_file['DATABASE_NAME']
+    notion_bot = Notion(auth)
+    db = notion_bot.fetch_databases(db_name)
+    asyncio.run(run(account, password, db))
 
 if __name__ == '__main__':
     #policy = asyncio.MAX

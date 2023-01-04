@@ -1,6 +1,3 @@
-import requests
-import asyncio
-import aiohttp
 from AsyncBot import *
 from PyNotion import *
 from PyNotion.NotionClient import Notion
@@ -8,12 +5,15 @@ from PyNotion.object import *
 from PyNotion.block import *
 import os
 from dotenv import load_dotenv
+import sys
+from config import get_config
 
 load_dotenv()
 NOTION_AUTH = os.getenv("NOTION_AUTH")
-ACCOUNT = os.getenv("ACCOUNT")
-PASSWORD = os.getenv("PASSWORD")
-DATABASE_NAME = os.getenv("DATABASE_NAME")
+config_file = get_config()
+ACCOUNT = config_file['STUDENT_ID']
+PASSWORD = config_file['ACCOUNT']
+DATABASE_NAME = config_file['DATABASE_NAME']
 notion_bot = Notion(NOTION_AUTH)
 db = notion_bot.fetch_databases(DATABASE_NAME)
 
@@ -75,7 +75,7 @@ def homework_in_notion_template(db, target):
 
 
 async def run():
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
         # bot part
         bot = Bot(session, ACCOUNT, PASSWORD)
         await bot.login()
@@ -106,7 +106,7 @@ async def run():
     #             # await db.async_post(new_page(target=target), session=session)
     # print(builtins_list)
     # db.post(new_page(target=builtins_list[0]))
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
         # notion part
         df = db.query_database_dataframe()
         index = df['ID']
@@ -129,4 +129,6 @@ async def run():
 
 
 if __name__ == '__main__':
+    #policy = asyncio.MAX
+    #asyncio.set_event_loop_policy(policy)
     asyncio.run(run())

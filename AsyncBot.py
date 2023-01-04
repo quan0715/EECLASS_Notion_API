@@ -1,3 +1,5 @@
+from typing import List
+
 from PyNotion.Object import *
 from PyNotion.NotionClient import Notion
 from bs4 import BeautifulSoup
@@ -24,11 +26,11 @@ class Bot:
         self.session = session
         self.account = account
         self.password = password
-        self.courses_list: list[Course] = []
-        self.bulletins_list: list[Bulletin] = []
-        self.homeworks_list: list[Homework] = []
-        self.bulletins_detail_list: list[dict] = []
-        self.homeworks_detail_list: list[dict] = []
+        self.courses_list: List[Course] = []
+        self.bulletins_list: List[Bulletin] = []
+        self.homeworks_list: List[Homework] = []
+        self.bulletins_detail_list: List[dict] = []
+        self.homeworks_detail_list: List[dict] = []
 
     async def login(self):
         data = {
@@ -161,7 +163,7 @@ class Course:
             # if pagination:
             #     for p in pagination:
             # self.bulletins.append(self.bulletin_page_url + p)
-            self.bulletins = [Bulletin(bot=self.bot, link=p['data-url'],title=p['data-modal-title']) for p in b_list]
+            self.bulletins = [Bulletin(bot=self.bot, link=p['data-url'], title=p['data-modal-title']) for p in b_list]
             return self.bulletins
 
     # async def get_all_bulletin_page(self):
@@ -227,11 +229,15 @@ class Bulletin:
             attach = soup.select('div.text > a')
             attach = [{'名稱': a.text, '連結': "https://ncueeclass.ncu.edu.tw" + a['href'], '檔案大小': a.span.text} for a in
                       attach]
+            date = detail[1].strip('公告日期 ')
+            if len(date.split('-')) == 2:
+                date = "2023-" + date
+                # TODO 動態抓取今年年份
             result = {
                 'type': '公告',
                 'url': self.url,
                 'title': self.title,
-                'date': {'start': f"{Bot.YEAR}-{detail[1].strip('公告日期 ')}"},
+                'date': {'start': f"{date}"},
                 'ID': self.index,
                 'course': detail[2].strip(' '),
                 '發佈人': detail[3].strip(' by '),

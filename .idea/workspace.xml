@@ -23,16 +23,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="da5592d3-82ee-4207-826e-5e6f4d09de58" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/EECLASS_Notion_API.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/aws.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PyNotion" beforeDir="false" afterPath="$PROJECT_DIR$/PyNotion" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/PyNotion/NotionClient.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyNotion/NotionClient.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/PyNotion/object/Query.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyNotion/object/Query.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/PyNotion/object/Relation.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyNotion/object/Relation.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/PyNotion/object/Text.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyNotion/object/Text.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/async_run.py" beforeDir="false" afterPath="$PROJECT_DIR$/async_run.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -345,7 +342,7 @@
       <workItem from="1667028978975" duration="6155000" />
       <workItem from="1672834219941" duration="1293000" />
       <workItem from="1672835519478" duration="7429000" />
-      <workItem from="1672856302821" duration="1693000" />
+      <workItem from="1672856302821" duration="2667000" />
     </task>
     <servers />
   </component>
@@ -380,7 +377,7 @@
     <SUITE FILE_PATH="coverage/EECLASS_Notion_API$run.coverage" NAME="run Coverage Results" MODIFIED="1661929508023" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/EECLASS_Notion_API$test.coverage" NAME="test Coverage Results" MODIFIED="1655774823790" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/EECLASS_Notion_API$async_test.coverage" NAME="async_test Coverage Results" MODIFIED="1661871452048" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/EECLASS_Notion_API$async_run.coverage" NAME="async_run Coverage Results" MODIFIED="1672845237724" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/EECLASS_Notion_API$async_run.coverage" NAME="async_run Coverage Results" MODIFIED="1672890024823" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/EECLASS_Notion_API$main.coverage" NAME="config Coverage Results" MODIFIED="1672842449274" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

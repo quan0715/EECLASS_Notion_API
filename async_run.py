@@ -106,12 +106,12 @@ async def run(account, password, db):
         for r in bot.homeworks_detail_list:
             if r['ID'] not in index:
                 tasks.append(db.async_post(homework_in_notion_template(db, r), session))
-        await asyncio.gather(*tasks)
+        print(await asyncio.gather(*tasks))
         tasks = []
         for r in bot.bulletins_detail_list:
             if r['ID'] not in index:
                 tasks.append(db.async_post(builtin_in_notion_template(db, r), session))
-        await asyncio.gather(*tasks)
+        print(await asyncio.gather(*tasks))
         # tasks = [db.async_post(builtin_in_notion_template(db, r), session) for r in bot.bulletins_detail_list]
         # await asyncio.gather(*tasks)
         # tasks = [db.async_post(homework_in_notion_template(db, r), session) for r in bot.homeworks_detail_list]

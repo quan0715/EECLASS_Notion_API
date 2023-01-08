@@ -72,10 +72,6 @@ class Bot:
         await self.retrieve_all_homeworks_details()
         await self.retrieve_all_bulletins()
         await self.retrieve_all_bulletins_details()
-        # print(self.bulletins_list)
-        # print(self.homeworks_list)
-        # print(self.homeworks_detail_list)
-        # print(self.bulletins_detail_list)
 
     async def retrieve_all_course(self, refresh: bool = False, check: bool = False):
         self.courses_list = await Course.retrieve_all(self, refresh, check)

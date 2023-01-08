@@ -1,12 +1,10 @@
 from AsyncBot import *
-from PyNotion import *
 from PyNotion.NotionClient import Notion
-from PyNotion.object import *
 from PyNotion.block import *
 import os
 from dotenv import load_dotenv
-import sys
-from config import get_config
+
+
 
 
 def builtin_in_notion_template(db, target):
@@ -65,60 +63,54 @@ def homework_in_notion_template(db, target):
     )
 
 
-async def run(account, password, db):
+async def fetch_all_eeclass_data(account, password):
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
-        # bot part
         bot = Bot(session, account, password)
         await bot.login()
         await bot.retrieve_all_course(check=True, refresh=True)
         await bot.retrieve_all_bulletins()
-        await bot.retrieve_all_bulletins_details()
+        all_bulletins_detail = await bot.retrieve_all_bulletins_details()
         await bot.retrieve_all_homeworks()
-        await bot.retrieve_all_homeworks_details()
-        # await bot.pipline()
-        # c = Course(bot, "編譯器 Compiler", "15581")
-        # print(await c.get_all_bulletin_page())
-        # await c.get_all_bulletin()
-        # tasks = [r.retrieve() for r in c.bulletins]
-        # result = await asyncio.gather(*tasks)
-        # print(result)
-        # for r in result:
-        #     resp = await r.retrieve()
-    #     courses = await eeclass_bot.retrieve_all_course(refresh=True, check=True)
-    #     tasks = [r.get_bulletin_page() for r in courses]
-    #     await asyncio.gather(*tasks)
-    #     tasks = [r.get_all_bulletin() for r in courses]
-    #     await asyncio.gather(*tasks)
-    #     builtins_list = []
-    #     for course in courses:
-    #         for bulletin in course.bulletins:
-    #             builtins_list.append(await bulletin.retrieve())
-    #             # await db.async_post(new_page(target=target), session=session)
-    # print(builtins_list)
-    # db.post(new_page(target=builtins_list[0]))
+        all_homework_detail = await bot.retrieve_all_homeworks_details()
+        return all_bulletins_detail, all_homework_detail
+
+
+def get_config():
+    load_dotenv()
+    auth = os.getenv("NOTION_AUTH")
+    notion_bot = Notion(auth)
+    db = notion_bot.fetch_databases("CONFIG")
+    db_table = db.query_database_dataframe()
+    table = {
+         k: v for k, v in zip(db_table['KEY'], db_table['VALUE'])
+    }
+    return {
+        "DATABASE_NAME": table['DATABASE_NAME'],
+        "ACCOUNT": table['STUDENT_ID'],
+        "PASSWORD": table['PASSWORD'],
+    }
+
+async def update_to_notion_db(target, db):
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
         # notion part
+        # await db.async_clear(session)
         df = db.query_database_dataframe()
         index = df['ID']
-        # print(index)
-        # await db.async_clear(session)
+        homeworks = target['homeworks']
+        bulletins = target['bulletins']
         tasks = []
-        for r in bot.homeworks_detail_list:
+        for r in homeworks:
             if r['ID'] not in index:
                 tasks.append(db.async_post(homework_in_notion_template(db, r), session))
-        print(await asyncio.gather(*tasks))
+        await asyncio.gather(*tasks)
         tasks = []
-        for r in bot.bulletins_detail_list:
+        for r in bulletins:
             if r['ID'] not in index:
                 tasks.append(db.async_post(builtin_in_notion_template(db, r), session))
-        print(await asyncio.gather(*tasks))
-        # tasks = [db.async_post(builtin_in_notion_template(db, r), session) for r in bot.bulletins_detail_list]
-        # await asyncio.gather(*tasks)
-        # tasks = [db.async_post(homework_in_notion_template(db, r), session) for r in bot.homeworks_detail_list]
-        # tasks.extend([db.async_post(builtin_in_notion_template(db, r), session) for r in bot.bulletins_detail_list])
+        await asyncio.gather(*tasks)
 
 
-def build():
+async def run():
     load_dotenv()
     auth = os.getenv("NOTION_AUTH")
     config_file = get_config()
@@ -127,10 +119,10 @@ def build():
     db_name = config_file['DATABASE_NAME']
     notion_bot = Notion(auth)
     db = notion_bot.fetch_databases(db_name)
-    asyncio.run(run(account, password, db))
+    r = await fetch_all_eeclass_data(account, password)
+    target = {'bulletins': r[0], 'homeworks': r[1]}
+    await update_to_notion_db(target, db)
 
 if __name__ == '__main__':
-    #policy = asyncio.MAX
-    #asyncio.set_event_loop_policy(policy)
-    build()
-    # asyncio.run(run())
+    asyncio.run(run())
+

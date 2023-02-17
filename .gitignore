@@ -1,6 +1,8 @@
 ./venv/
 .env
 .test.py
+./idea/
 ./__pycache__/
 *.pdf
 *.zip
+./__pycache__/

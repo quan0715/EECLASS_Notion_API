@@ -5,8 +5,6 @@ import os
 from dotenv import load_dotenv
 
 
-
-
 def builtin_in_notion_template(db, target):
     return db.new_page(
         prop_value=PropertyValue(

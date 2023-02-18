@@ -1,14 +1,11 @@
 from typing import List
-
-from PyNotion.Object import *
-from PyNotion.NotionClient import Notion
 from bs4 import BeautifulSoup
-import re
+# import re
 import os
 import json
 import aiohttp
 import asyncio
-from aiohttp import web
+# from aiohttp import web
 from fake_user_agent import user_agent
 import re
 
@@ -173,10 +170,9 @@ class Course:
             # print(self)
             soup = BeautifulSoup(await resp.text(), 'lxml')
             soup_select = soup.select("#homeworkListTable > tbody > tr > td > div > div > div.text-overflow > a")
-            homework_link_list = [p['href'] for p in soup_select]
             for homework in soup_select:
-                url = homework['href']
-                title = homework.find('span').text
+                url: str = homework['href']
+                title: str = homework['title']
                 self.homeworks.append(
                     Homework(
                         bot=self.bot,
@@ -185,7 +181,6 @@ class Course:
                         course=self
                     )
                 )
-
             return self.homeworks
 
 
@@ -258,6 +253,7 @@ class Bulletin:
     #             self.bulletins.append(Bulletin(bot=self.bot, link=link, title=title))
     #     return self.bulletins
 
+
 class Homework:
     BaseURL = "https://ncueeclass.ncu.edu.tw/course/homework/"
 
@@ -303,15 +299,16 @@ class Homework:
                 type='homework',
                 ID=self.index,
             )
+            print(f"{self.title} Finish")
             return self.details
 
 
 async def main():
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(connector= aiohttp.TCPConnector(ssl=False)) as session:
+        pass
         # bot part
-        bot = Bot(session, "109502563", "H125920690")
-        await bot.login()
-        await bot.pipline()
+        # await bot.login()
+        # await bot.pipline()
         # await bot.retrieve_all_course(check=True, refresh=True)
         # homeworks = await bot.retrieve_all_homeworks()
         # await bot.retrieve_all_homeworks_details()

@@ -23,31 +23,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="da5592d3-82ee-4207-826e-5e6f4d09de58" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/csv-editor.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/EECLASS_Notion_API.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/EECLASS_Notion_API.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AsyncBot.py" beforeDir="false" afterPath="$PROJECT_DIR$/AsyncBot.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/PyNotion" beforeDir="false" afterPath="$PROJECT_DIR$/PyNotion" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PyNotion/.env" beforeDir="false" afterPath="$PROJECT_DIR$/PyNotion/.env" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PyNotion/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/PyNotion/.idea/PyNotion.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/PyNotion/.idea/aws.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/PyNotion/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/PyNotion/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/PyNotion/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/PyNotion/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/PyNotion/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/PyNotion/NotionClient.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyNotion/NotionClient.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PyNotion/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyNotion/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PyNotion/base/Base.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyNotion/base/Base.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PyNotion/base/Block.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyNotion/base/Block.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PyNotion/base/Database.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyNotion/base/Database.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PyNotion/base/Page.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyNotion/base/Page.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PyNotion/object/BlockObject.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyNotion/object/BlockObject.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PyNotion/object/Date.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyNotion/object/Date.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PyNotion/object/Option.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyNotion/object/Option.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PyNotion/test/test_Database.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyNotion/test/test_Database.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/async_run.py" beforeDir="false" afterPath="$PROJECT_DIR$/async_run.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/course_info.json" beforeDir="false" afterPath="$PROJECT_DIR$/course_info.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PyNotion/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/PyNotion/.gitignore" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -362,7 +342,7 @@
       <workItem from="1672910029068" duration="19227000" />
       <workItem from="1673226551534" duration="2522000" />
       <workItem from="1673715661435" duration="410000" />
-      <workItem from="1676707447056" duration="7347000" />
+      <workItem from="1676707447056" duration="8476000" />
     </task>
     <servers />
   </component>
@@ -411,7 +391,7 @@
     <SUITE FILE_PATH="coverage/EECLASS_Notion_API$async_test.coverage" NAME="async_test Coverage Results" MODIFIED="1661871452048" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/EECLASS_Notion_API$AsyncBot.coverage" NAME="AsyncBot Coverage Results" MODIFIED="1676712475138" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/EECLASS_Notion_API$.coverage" NAME=" Coverage Results" MODIFIED="1676713497417" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/PyNotion/test" />
-    <SUITE FILE_PATH="coverage/EECLASS_Notion_API$async_run.coverage" NAME="async_run Coverage Results" MODIFIED="1676715153264" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/EECLASS_Notion_API$async_run.coverage" NAME="async_run Coverage Results" MODIFIED="1676715353638" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/EECLASS_Notion_API$main.coverage" NAME="config Coverage Results" MODIFIED="1672842449274" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

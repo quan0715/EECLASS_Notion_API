@@ -235,7 +235,7 @@ class Bulletin:
                 'content': {'公告內容': content, '附件': attach, '連結': link},
                 '人氣': detail[0].split(' ')[1],
             }
-            print(f"{self.title} Finish")
+            print(f"EECLASS BOT (fetch) : {self.title}")
             self.details = result
             return result
 
@@ -299,23 +299,23 @@ class Homework:
                 type='homework',
                 ID=self.index,
             )
-            print(f"{self.title} Finish")
+            print(f"EECLASS BOT (fetch) : {self.title}")
             return self.details
 
 
-async def main():
-    async with aiohttp.ClientSession(connector= aiohttp.TCPConnector(ssl=False)) as session:
-        pass
-        # bot part
-        # await bot.login()
-        # await bot.pipline()
-        # await bot.retrieve_all_course(check=True, refresh=True)
-        # homeworks = await bot.retrieve_all_homeworks()
-        # await bot.retrieve_all_homeworks_details()
-        #hw = homeworks[1]
-        # print(hw, type(hw), type(hw[0]))
-        # await bot.retrieve_all_homeworks_details()
-        # print(hw[0])
-        # print(await hw[0].retrieve())
-if __name__ == '__main__':
-    asyncio.run(main())
+# async def main():
+#     async with aiohttp.ClientSession(connector= aiohttp.TCPConnector(ssl=False)) as session:
+#         pass
+#         # bot part
+#         # await bot.login()
+#         # await bot.pipline()
+#         # await bot.retrieve_all_course(check=True, refresh=True)
+#         # homeworks = await bot.retrieve_all_homeworks()
+#         # await bot.retrieve_all_homeworks_details()
+#         #hw = homeworks[1]
+#         # print(hw, type(hw), type(hw[0]))
+#         # await bot.retrieve_all_homeworks_details()
+#         # print(hw[0])
+#         # print(await hw[0].retrieve())
+# if __name__ == '__main__':
+#     asyncio.run(main())

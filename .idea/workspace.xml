@@ -23,7 +23,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="da5592d3-82ee-4207-826e-5e6f4d09de58" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/PyNotion/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/PyNotion/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/EECLASS_Notion_API.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/EECLASS_Notion_API.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/async_run.py" beforeDir="false" afterPath="$PROJECT_DIR$/async_run.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/course_info.json" beforeDir="false" afterPath="$PROJECT_DIR$/course_info.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/run.py" beforeDir="false" afterPath="$PROJECT_DIR$/run.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -92,7 +96,7 @@
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
@@ -101,7 +105,7 @@
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.async_run">
+  <component name="RunManager" selected="Python.run">
     <configuration name="AsyncBot" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="EECLASS_Notion_API" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -225,15 +229,12 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="example" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="run" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="EECLASS_Notion_API" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/PyNotion" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
@@ -248,7 +249,12 @@
           <ENTRY IS_ENABLED="true" PARSER="runconfig" IS_EXECUTABLE="false" />
         </ENTRIES>
       </EXTENSION>
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/PyNotion/example.py" />
+      <EXTENSION ID="software.aws.toolkits.jetbrains.core.execution.PythonAwsConnectionExtension">
+        <option name="credential" />
+        <option name="region" />
+        <option name="useCurrentConnection" value="false" />
+      </EXTENSION>
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/run.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="true" />
@@ -273,19 +279,19 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Python.run" />
       <item itemvalue="Python.config" />
       <item itemvalue="Python.async_run" />
       <item itemvalue="Python.AsyncBot" />
-      <item itemvalue="Python.example" />
       <item itemvalue="Python tests.Python tests in test_Database.py" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.run" />
         <item itemvalue="Python.async_run" />
         <item itemvalue="Python tests.Python tests in test_Database.py" />
         <item itemvalue="Python.AsyncBot" />
         <item itemvalue="Python.config" />
-        <item itemvalue="Python.example" />
       </list>
     </recent_temporary>
   </component>
@@ -342,6 +348,13 @@
       <workItem from="1673226551534" duration="2522000" />
       <workItem from="1673715661435" duration="410000" />
       <workItem from="1676707447056" duration="12693000" />
+      <workItem from="1677737464465" duration="237000" />
+      <workItem from="1677737977911" duration="92000" />
+      <workItem from="1677738139180" duration="172000" />
+      <workItem from="1677738473249" duration="96000" />
+      <workItem from="1677738577361" duration="5000" />
+      <workItem from="1677760652676" duration="1632000" />
+      <workItem from="1677762824048" duration="2150000" />
     </task>
     <servers />
   </component>
@@ -385,7 +398,7 @@
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/EECLASS_Notion_API$config.coverage" NAME="config Coverage Results" MODIFIED="1673102277302" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/EECLASS_Notion_API$example.coverage" NAME="example Coverage Results" MODIFIED="1667029820915" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/PyNotion" />
-    <SUITE FILE_PATH="coverage/EECLASS_Notion_API$run.coverage" NAME="run Coverage Results" MODIFIED="1661929508023" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/EECLASS_Notion_API$run.coverage" NAME="run Coverage Results" MODIFIED="1677765873910" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/EECLASS_Notion_API$test.coverage" NAME="test Coverage Results" MODIFIED="1655774823790" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/EECLASS_Notion_API$async_test.coverage" NAME="async_test Coverage Results" MODIFIED="1661871452048" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/EECLASS_Notion_API$AsyncBot.coverage" NAME="AsyncBot Coverage Results" MODIFIED="1676712475138" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />

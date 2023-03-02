@@ -1,9 +1,8 @@
 from typing import Dict
-
 from AsyncBot import *
-from PyNotion.NotionClient import Notion
-from PyNotion.base.Database import Database
-from PyNotion.object.BlockObject import *
+from NotionBot import *
+from NotionBot.base import *
+from NotionBot.object import *
 import os
 from dotenv import load_dotenv
 

@@ -27,7 +27,7 @@ LINE_CHANNEL_SECRET = 'f069eb986524cb2ff9dce4700d6c6d55'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['https://250f-2001-b400-e3df-19c4-acac-1029-992-8e3d.ngrok-free.app/']
+ALLOWED_HOSTS = ['eeclass-line.azurewebsites.net']
 
 
 # Application definition

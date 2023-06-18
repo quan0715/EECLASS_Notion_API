@@ -1,8 +1,10 @@
 from typing import Dict
+
 from AsyncBot import *
 from NotionBot import *
-from NotionBot.base import *
+from NotionBot.base.Database import *
 from NotionBot.object import *
+from NotionBot.object.BlockObject import *
 import os
 from dotenv import load_dotenv
 

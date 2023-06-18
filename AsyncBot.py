@@ -286,7 +286,11 @@ class Homework:
                     continue
 
                 for link in c.findAll('a'):
-                    results['link'].append({"title": link.text.strip(), "link": link['href']})
+                    # print(link)
+                    try:
+                        results['link'].append({"title": link.text.strip(), "link": link['href']})
+                    except KeyError:
+                        continue
                 results[t.text] = c.text
 
             self.details = dict(

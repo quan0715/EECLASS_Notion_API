@@ -1,7 +1,7 @@
 venv
 .env
 .test.py
-idea
+.idea/
 __pycache__
 *.pdf
 *.zip

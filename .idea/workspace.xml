@@ -24,12 +24,6 @@
   <component name="ChangeListManager">
     <list default="true" id="da5592d3-82ee-4207-826e-5e6f4d09de58" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/EECLASS_Notion_API.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/EECLASS_Notion_API.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AsyncBot.py" beforeDir="false" afterPath="$PROJECT_DIR$/AsyncBot.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/async_run.py" beforeDir="false" afterPath="$PROJECT_DIR$/async_run.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/course_info.json" beforeDir="false" afterPath="$PROJECT_DIR$/course_info.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -365,7 +359,7 @@
       <workItem from="1678067926566" duration="165000" />
       <workItem from="1678068710439" duration="501000" />
       <workItem from="1687023947323" duration="709000" />
-      <workItem from="1687066859119" duration="1306000" />
+      <workItem from="1687066859119" duration="1628000" />
     </task>
     <servers />
   </component>

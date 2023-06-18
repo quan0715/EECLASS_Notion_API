@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,13 +22,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-q#%0vxg&^!mujj0t=x3p7m_w)(bhnol-1%)@8+9oy)k_5yc9*7'
-LINE_CHANNEL_ACCESS_TOKEN = '1zHIUqbCcIkxeA4i1euAoaXs32aDBC7FXEdoFzsfkV49pI/cQIbkgz8xp5RGDTrFZArscto97pOrBPpUE0xTDIN8nH9aTUeOm63p3a2arByY1+Wrrf7TkKK/F2jJ1GOLlMfTrM7Xpie0ivzLJmw4AQdB04t89/1O/w1cDnyilFU='
-LINE_CHANNEL_SECRET = 'f069eb986524cb2ff9dce4700d6c6d55'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['eeclass-line.azurewebsites.net']
+ALLOWED_HOSTS = [
+    '8b60-61-222-210-211.ngrok-free.app'
+]
 
 
 # Application definition
@@ -39,7 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'eeclass_line_bot'
+    'eeclass_line_bot',
+    'notion_auth'
 ]
 
 MIDDLEWARE = [
@@ -70,6 +72,14 @@ TEMPLATES = [
         },
     },
 ]
+
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
 
 WSGI_APPLICATION = 'djangoProject.wsgi.application'
 
@@ -125,4 +135,7 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
+NOTION_OAUTH_CLIENT_ID = os.environ.get("NOTION_OAUTH_CLIENT_ID")
+NOTION_OAUTH_SECRET_KEY = os.environ.get("NOTION_OAUTH_SECRET_KEY")
+LINE_CHANNEL_ACCESS_TOKEN = os.environ.get("LINE_CHANNEL_ACCESS_TOKEN")
+LINE_CHANNEL_SECRET = os.environ.get("LINE_CHANNEL_SECRET")

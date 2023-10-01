@@ -307,19 +307,14 @@ class Homework:
             return self.details
 
 
-# async def main():
-#     async with aiohttp.ClientSession(connector= aiohttp.TCPConnector(ssl=False)) as session:
-#         pass
-#         # bot part
-#         # await bot.login()
-#         # await bot.pipline()
-#         # await bot.retrieve_all_course(check=True, refresh=True)
-#         # homeworks = await bot.retrieve_all_homeworks()
-#         # await bot.retrieve_all_homeworks_details()
-#         #hw = homeworks[1]
-#         # print(hw, type(hw), type(hw[0]))
-#         # await bot.retrieve_all_homeworks_details()
-#         # print(hw[0])
-#         # print(await hw[0].retrieve())
-# if __name__ == '__main__':
-#     asyncio.run(main())
+async def main():
+    async with aiohttp.ClientSession() as session:
+        bot = Bot(session=session,
+                  account="109502563",
+                  password="H125920690")
+        await bot.login()
+        await bot.retrieve_all_course(check=True, refresh=True)
+        await bot.pipline()
+
+if __name__ == '__main__':
+    asyncio.run(main())

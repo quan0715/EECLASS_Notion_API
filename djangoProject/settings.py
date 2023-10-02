@@ -22,18 +22,22 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-q#%0vxg&^!mujj0t=x3p7m_w)(bhnol-1%)@8+9oy)k_5yc9*7'
+SECURE_SSL_REDIRECT = True
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    '8b60-61-222-210-211.ngrok-free.app'
+    'localhost',
+    '172.31.42.42',
+    '13.230.105.138',
 ]
 
-
+DJANGO_SETTINGS_MODULE = 'djangoProject.settings'
 # Application definition
 
 INSTALLED_APPS = [
+    'django_extensions',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

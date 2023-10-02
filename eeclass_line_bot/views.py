@@ -38,7 +38,7 @@ class LineBotCallbackView(View):
     handler = WebhookHandler(settings.LINE_CHANNEL_SECRET)
     server_url = "https://" + settings.ALLOWED_HOSTS[0]
 
-    @csrf_exempt # 确保此视图可以处理 POST 请求
+    @csrf_exempt
     def dispatch(self, request, *args, **kwargs):
         return super(LineBotCallbackView, self).dispatch(request, *args, **kwargs)
 

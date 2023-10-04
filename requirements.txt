@@ -16,6 +16,7 @@ inquirer==2.10.1
 jmespath==1.0.1
 lxml==4.9.2
 multidict==6.0.4
+NotionBot==0.0.8
 numpy==1.24.1
 pandas==1.5.2
 python-dateutil==2.8.2

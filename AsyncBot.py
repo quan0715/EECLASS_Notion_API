@@ -69,6 +69,8 @@ class Bot:
         await self.retrieve_all_homeworks_details()
         await self.retrieve_all_bulletins()
         await self.retrieve_all_bulletins_details()
+        await self.retrieve_all_material()
+        await self.retrieve_all_materials_details()
 
     async def retrieve_all_course(self, refresh: bool = False, check: bool = False):
         self.courses_list = await Course.retrieve_all(self, refresh, check)
@@ -82,7 +84,6 @@ class Bot:
         self.bulletins_list = []
         for cb in course_bulletins_list:
             self.bulletins_list.extend(cb)
-
         return self.bulletins_list
 
     async def retrieve_all_homeworks(self):
@@ -93,6 +94,16 @@ class Bot:
             self.homeworks_list.extend(ch)
         return self.homeworks_list
 
+    async def retrieve_all_material(self):
+        tasks = [r.get_all_material_page() for r in self.courses_list]
+        course_material_list = await asyncio.gather(*tasks)
+        self.material_list = []
+        for course in course_material_list:
+            for block in course:
+                print(block['materials'])
+                self.material_list.extend(block['materials'])
+        return self.material_list
+    
     async def retrieve_all_bulletins_details(self):
         tasks = [bu.retrieve() for bu in self.bulletins_list if isinstance(bu, Bulletin)]
         self.bulletins_detail_list = await asyncio.gather(*tasks)
@@ -102,7 +113,19 @@ class Bot:
         tasks = [hw.retrieve() for hw in self.homeworks_list if isinstance(hw, Homework)]
         self.homeworks_detail_list = await asyncio.gather(*tasks)
         return self.homeworks_detail_list
+    
+    async def retrieve_all_materials_details(self):
+        tasks = [m.retrieve() for m in self.material_list if isinstance(m, Material)]
+        self.materials_detail_list = await asyncio.gather(*tasks)
+        return self.materials_detail_list
 
+class_name_to_material_type = {
+    "font-icon fs-fw far fa-file-alt" : "text",
+    "font-icon fs-fw far fa-file-video" : "video",
+    "font-icon fs-fw far fa-clipboard" : "homework",
+    "font-icon fs-fw far fa-file-pdf" : "pdf",
+    "font-icon fs-fw far fa-file-powerpoint" : "ppt"
+}
 
 class Course:
     BASE_URL = Bot.BASE_URL + '/course/'
@@ -118,6 +141,8 @@ class Course:
         self.homework_list_url = Course.BASE_URL + "homeworkList/" + index
         self.homeworks_url = []
         self.homeworks = []
+        self.material_url = Course.BASE_URL + index
+        self.materials = []
 
     def __repr__(self):
         return f"{self.name}\n {self.url}\n"
@@ -182,6 +207,60 @@ class Course:
                     )
                 )
             return self.homeworks
+        
+    async def get_all_material_page(self):
+        async with self.bot.session.get(self.material_url, headers=self.bot.headers) as resp:
+            soup = BeautifulSoup(await resp.text(), 'lxml')
+            material_block = soup.select(".fs-block-body > div > ol.xtree-list > li")
+            for block in material_block:
+                block_material_list = []
+                block_title = block.select_one("div.header.hover.hover > div > span > div.text > div").text
+                material_in_block = block.select("div.body > ol.xtree-list > li")
+                for material in material_in_block:
+                    if " ".join(material['class']) == "xtree-node type- clearfix":
+                        type = class_name_to_material_type[' '.join(material.select_one("div.header.hover.hover > div.center-part > span.xtree-node-label > div.icon.pull-left > span")['class'])]
+                        link = material.select("div.header.hover.hover > div.center-part > span.xtree-node-label > div.text > div.node-title > div.fs-singleLineText > div")[1].select_one('a')['href']
+                        title = material.select("div.header.hover.hover > div.center-part > span.xtree-node-label > div.text > div.node-title > div.fs-singleLineText > div")[1].select_one('a > span.text').text
+                        brief_condition = material.select_one("div.header.hover.hover > div.center-part > div.hidden-xs.pull-right")
+                        deadline = brief_condition.select("div.ext-col.fs-text-nowrap.col-time.text-center")[0].text
+                        complete_condition = brief_condition.select_one("div.ext-col.fs-text-nowrap.col-char7.text-center").text
+                        read_time = brief_condition.select_one("div.ext-col.fs-text-nowrap.col-char4.text-center > span").text if brief_condition.select_one("div.ext-col.fs-text-nowrap.col-char4.text-center > span") != None else brief_condition.select_one("div.ext-col.fs-text-nowrap.col-char4.text-center").text
+                        complete_check = True if brief_condition.select("div.ext-col.fs-text-nowrap.col-time.text-center")[1].select_one("span") != None else False
+                        block_material_list.append(
+                            Material(
+                                bot=self.bot,
+                                course=self,
+                                type=type,
+                                link=link,
+                                title=title,
+                                deadline=deadline,
+                                complete_condition=complete_condition,
+                                read_time=read_time,
+                                complete_check=complete_check
+                            )
+                        )
+                        print(type,link,title,deadline,complete_condition,read_time,complete_check)
+                self.materials.append(
+                    dict(
+                        block_title = block_title,
+                        materials = block_material_list
+                    )
+                )
+            return self.materials
+            # for material in soup_select:
+            #     url = material['href']
+            #     title = material.select_one('span.text').text
+            #     self.materials.append(
+            #         Material(
+            #             bot=self.bot,
+            #             title=title,
+            #             link=url,
+            #             course=self
+            #         )
+            #     )
+            # for r in self.materials:
+            #     print(r)
+            # return self.materials
 
 
 class Bulletin:
@@ -286,7 +365,6 @@ class Homework:
                     continue
 
                 for link in c.findAll('a'):
-                    # print(link)
                     try:
                         results['link'].append({"title": link.text.strip(), "link": link['href']})
                     except KeyError:
@@ -305,6 +383,65 @@ class Homework:
             )
             print(f"EECLASS BOT (fetch) : {self.title}")
             return self.details
+
+class Material:
+    BaseURL = "https://ncueeclass.ncu.edu.tw"
+
+    def __init__(self, bot, title, link, course, type, deadline, complete_condition, read_time, complete_check) -> None:
+        self.bot = bot
+        self.url = self.BaseURL + link
+        self.title = title
+        self.course = course
+        self.type = type
+        self.deadline = deadline
+        self.complete_condition = complete_condition
+        self.read_time = read_time
+        self.complete_check = complete_check
+
+    def __repr__(self) -> str:
+        return f"{self.title}: {self.url}"
+
+    async def retrieve(self):
+        async with self.bot.session.get(self.url, headers=self.bot.headers) as resp:
+            soup = BeautifulSoup( await resp.text(), 'lxml')
+            detail_str = soup.select_one("div.ext2.fs-hint")
+            if detail_str == None:
+                '''影片類型'''
+                pass
+            else:
+                detail_str = detail_str.text
+                exp = r"(\d+) 觀看數"
+                views = re.search(pattern=exp, string=detail_str).group(1)
+                exp = r"更新時間 (.+),"
+                update_time = re.search(pattern=exp, string=detail_str).group(1)
+                exp = r"by (.+)"
+                uploader = re.search(pattern=exp, string=detail_str).group(1)
+                
+                online_links = soup.select("div.fs-block-body.list-margin > div > a")
+                online_links = [link['href'] for link in online_links]
+                attachments = soup.select("div.fs-list.fs-filelist > ul > li > div.text > a")
+                attachments = [attachment['href'] for attachment in attachments]
+                
+            self.details = dict(
+                title = self.title,
+                ID = self.url.split('/')[-1],
+                url = self.url,
+                course = self.course.name,
+                type = 'material',
+                subtype = self.type,
+                # 觀看數 = views,
+                # 更新時間 = update_time,
+                deadline = {'end': f"{self.deadline}"},
+                # 發佈者 = uploader,
+                完成條件 = self.complete_condition,
+                完成度 = self.read_time,
+                已完成 = self.complete_check
+            )
+            return self.details
+            # video =  soup.select_one("div.fs-videoWrap") if soup.select_one("div.fs-videoWrap") != None else None
+            # print(self.title, ":", video)
+
+
 
 
 async def main():

@@ -1,11 +1,11 @@
-.venv/
+venv/
 .env
 .test.py
 .idea/
 __pycache__
 *.pdf
 *.zip
-.NotionBot/
+NotionBot/
 Lib
 Scripts
 *.cfg

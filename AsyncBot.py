@@ -310,8 +310,8 @@ class Homework:
 async def main():
     async with aiohttp.ClientSession() as session:
         bot = Bot(session=session,
-                  account="109502563",
-                  password="H125920690")
+                  account="你的帳號",
+                  password="你的密碼")
         await bot.login()
         await bot.retrieve_all_course(check=True, refresh=True)
         await bot.pipline()

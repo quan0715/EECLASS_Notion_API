@@ -9,3 +9,7 @@ NotionBot/
 Lib
 Scripts
 *.cfg
+./build/
+./dist/
+./eeclass_bot.egg-info.egg/
+course_info.json

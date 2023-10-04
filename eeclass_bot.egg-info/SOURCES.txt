@@ -1,0 +1,15 @@
+LICENCE.txt
+README.md
+setup.py
+eeclass_bot/EEAsyncBot.py
+eeclass_bot/EEBulletin.py
+eeclass_bot/EEConfig.py
+eeclass_bot/EECourse.py
+eeclass_bot/EEHomework.py
+eeclass_bot/EEMaterial.py
+eeclass_bot/__init__.py
+eeclass_bot.egg-info/PKG-INFO
+eeclass_bot.egg-info/SOURCES.txt
+eeclass_bot.egg-info/dependency_links.txt
+eeclass_bot.egg-info/requires.txt
+eeclass_bot.egg-info/top_level.txt

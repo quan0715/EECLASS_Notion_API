@@ -6,3 +6,12 @@ from . import (
     EEHomework,
     EEMaterial
 )
+
+__all__ = [
+    'EEAsyncBot',
+    'EEBulletin',
+    'EECourse',
+    'EEConfig',
+    'EEHomework',
+    'EEMaterial'
+]

@@ -119,17 +119,3 @@ class EEAsyncBot:
         self.materials_detail_list = await asyncio.gather(*tasks)
         return self.materials_detail_list
 
-
-async def main():
-    async with aiohttp.ClientSession() as session:
-        bot = EEAsyncBot(
-            session=session,
-            account="109502563",
-            password="H125920690"
-        )
-        await bot.login()
-        # await bot.retrieve_all_course(check=True, refresh=True)
-        await bot.pipline()
-
-if __name__ == '__main__':
-    asyncio.run(main())

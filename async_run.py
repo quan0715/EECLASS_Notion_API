@@ -5,6 +5,7 @@ from NotionBot import *
 from NotionBot.base.Database import *
 from NotionBot.object import *
 from NotionBot.object.BlockObject import *
+from newly import newly
 import os
 from dotenv import load_dotenv
 
@@ -124,33 +125,39 @@ def get_id_col(db_col: List[Dict]) -> List[str]:
 async def update_all_homework_info_to_notion_db(homeworks: List[Dict], db: Database):
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
         object_index = get_id_col(db.query())
+        newly_upload = []
         tasks = []
         for r in homeworks:
             if r['ID'] not in object_index:
-                print(f"upload homework : {r['title']} to homework database")
+                newly_upload.append(f"upload homework : {r['title']} to homework database")
                 tasks.append(db.async_post(homework_in_notion_template(db, r), session))
         await asyncio.gather(*tasks)
+        return newly_upload
 
 
 async def update_all_bulletin_info_to_notion_db(bulletins: List[Dict], db: Database):
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
         object_index = get_id_col(db.query())
+        newly_upload = []
         tasks = []
         for r in bulletins:
             if r['ID'] not in object_index:
-                print(f"upload bulletin : {r['title']} to bulletin database")
+                newly_upload.append(f"upload bulletin : {r['title']} to bulletin database")
                 tasks.append(db.async_post(builtin_in_notion_template(db, r), session))
         await asyncio.gather(*tasks)
+        return newly_upload
 
 async def update_all_material_info_to_notion_db(materials: List[Dict], db: Database):
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
         object_index = get_id_col(db.query())
+        newly_upload = []
         tasks = []
         for r in materials:
             if r != None and r['ID'] not in object_index:
-                print(f"upload material : {r['title']} to material database")
+                newly_upload.append(f"upload material : {r['title']} to material database")
                 tasks.append(db.async_post(material_in_notion_template(db, r), session))
         await asyncio.gather(*tasks)
+        return newly_upload
 
 async def run():
     load_dotenv()
@@ -161,10 +168,12 @@ async def run():
     homework_db: Database = notion_bot.get_database("1a23c1f9c75d427f925b83a9f220f9af")
     bulletin_db: Database = notion_bot.get_database("1a23c1f9c75d427f925b83a9f220f9af")
     material_db: Database = notion_bot.get_database("1a23c1f9c75d427f925b83a9f220f9af")
+    new_obj = newly()
     bulletins, homeworks, materials = await fetch_all_eeclass_data(account, password)
-    await update_all_bulletin_info_to_notion_db(bulletins, bulletin_db)
-    await update_all_homework_info_to_notion_db(homeworks, homework_db)
-    await update_all_material_info_to_notion_db(materials, material_db)
+    new_obj.extend_newly_upload(await update_all_bulletin_info_to_notion_db(bulletins, bulletin_db))
+    new_obj.extend_newly_upload(await update_all_homework_info_to_notion_db(homeworks, homework_db))
+    new_obj.extend_newly_upload(await update_all_material_info_to_notion_db(materials, material_db))
+    print(new_obj.get_newly_upload())
 
 
 if __name__ == '__main__':

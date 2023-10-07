@@ -405,6 +405,7 @@ class Material:
         async with self.bot.session.get(self.url, headers=self.bot.headers) as resp:
             soup = BeautifulSoup( await resp.text(), 'lxml')
             detail_str = soup.select_one("div.ext2.fs-hint")
+            content, attachments, link = "", [], []
             if detail_str == None:
                 '''影片類型'''
                 pass
@@ -419,8 +420,25 @@ class Material:
                 
                 online_links = soup.select("div.fs-block-body.list-margin > div > a")
                 online_links = [link['href'] for link in online_links]
-                attachments = soup.select("div.fs-list.fs-filelist > ul > li > div.text > a")
-                attachments = [attachment['href'] for attachment in attachments]
+
+                link = []
+                content_block = soup.select_one("div#xbox-inline")
+                content = content_block.select_one("div.module.mod_mediaDoc.mod_mediaDoc-show")
+                if content != None:
+                    for l in content.find_all("a"):
+                        if not l['href'].startswith("https://"):
+                            link.append({'名稱': "https://ncueeclass.ncu.edu.tw/" + l['href'], '連結': "https://ncueeclass.ncu.edu.tw/" + l['href']})
+                        else:
+                            link.append({'名稱': l.text, '連結': l['href']})
+                else:
+                    content = ""
+                attachments = content_block.select_one("div.module.mod_media.mod_media-attachList").select("div.text > a")
+                # print("attach: ",attachments)
+                attachments = [{'名稱': a.text, '連結': "https://ncueeclass.ncu.edu.tw" + a['href'], '檔案大小': a.span.text} for a in attachments]
+                content = '\n'.join([c.text for c in content])
+
+                # attachments = soup.select("div.fs-list.fs-filelist > ul > li > div.text > a")
+                # attachments = [attachment['href'] for attachment in attachments]
                 
             self.details = dict(
                 title = self.title,
@@ -435,7 +453,8 @@ class Material:
                 # 發佈者 = uploader,
                 完成條件 = self.complete_condition,
                 完成度 = self.read_time,
-                已完成 = self.complete_check
+                已完成 = self.complete_check,
+                content = {'教材內容': content, '附件': attachments, '連結': link}
             )
             return self.details
             # video =  soup.select_one("div.fs-videoWrap") if soup.select_one("div.fs-videoWrap") != None else None
@@ -445,7 +464,9 @@ class Material:
 
 
 async def main():
-    async with aiohttp.ClientSession() as session:
+    connector = aiohttp.TCPConnector(limit=50)
+    timeout = aiohttp.ClientTimeout(total=600)
+    async with aiohttp.ClientSession(connector=connector, timeout=timeout) as session:
         bot = Bot(session=session,
                   account="你的帳號",
                   password="你的密碼")

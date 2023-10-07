@@ -85,7 +85,16 @@ def material_in_notion_template(db: Database, target):
             # CallOutBlock(f"發佈人 {target['發佈者']}  觀看數 {target['觀看數']}  教材類型 {target['subtype']}", color=Colors.Background.green),
             CallOutBlock(f"教材類型 {target['subtype']}", color=Colors.Background.green),
             CallOutBlock(f"完成條件: {target['完成條件']}  進度: {target['完成度']}  已完成: " + complete_emoji, color=Colors.Background.red),
-
+            QuoteBlock(f"內容"),
+            ParagraphBlock(target['content']["教材內容"]),
+            ParagraphBlock(" "),
+            QuoteBlock(f"連結"),
+            *[ParagraphBlock(TextBlock(content=links['名稱'], link=links['連結'])) for links in
+              target['content']['連結']],
+            ParagraphBlock(" "),
+            QuoteBlock(f"附件"),
+            *[ParagraphBlock(TextBlock(content=links['名稱'], link=links['連結'])) for links in
+              target['content']['附件']],
         )
     )
 

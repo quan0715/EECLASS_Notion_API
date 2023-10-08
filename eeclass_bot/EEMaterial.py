@@ -2,7 +2,7 @@ import re
 
 from bs4 import BeautifulSoup
 
-from EEConfig import EEConfig
+from eeclass_bot.EEConfig import EEConfig
 
 
 class EEMaterial:

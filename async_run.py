@@ -1,12 +1,16 @@
 from typing import Dict
 
-from AsyncBot import *
+import aiohttp
+# from AsyncBot import *
 from NotionBot import *
 from NotionBot.base.Database import *
 from NotionBot.object import *
 from NotionBot.object.BlockObject import *
+
 import os
 from dotenv import load_dotenv
+
+from eeclass_bot.EEAsyncBot import EEAsyncBot
 
 
 def builtin_in_notion_template(db: Database, target):
@@ -90,7 +94,7 @@ def material_in_notion_template(db: Database, target):
 
 async def fetch_all_eeclass_data(account, password):
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
-        bot = Bot(session, account, password)
+        bot = EEAsyncBot(session, account, password)
         await bot.login()
         await bot.retrieve_all_course(check=True, refresh=True)
         await bot.retrieve_all_bulletins()
@@ -154,17 +158,20 @@ async def update_all_material_info_to_notion_db(materials: List[Dict], db: Datab
 
 async def run():
     load_dotenv()
-    auth = os.getenv("NOTION_AUTH")
+    # auth = os.getenv("NOTION_AUTH")
     account = os.getenv("ACCOUNT")
     password = os.getenv("PASSWORD")
-    notion_bot = Notion(auth)
-    homework_db: Database = notion_bot.get_database("1a23c1f9c75d427f925b83a9f220f9af")
-    bulletin_db: Database = notion_bot.get_database("1a23c1f9c75d427f925b83a9f220f9af")
-    material_db: Database = notion_bot.get_database("1a23c1f9c75d427f925b83a9f220f9af")
+    #notion_bot = Notion(auth)
+    #homework_db: Database = notion_bot.get_database("1a23c1f9c75d427f925b83a9f220f9af")
+    # bulletin_db: Database = notion_bot.get_database("1a23c1f9c75d427f925b83a9f220f9af")
+    # material_db: Database = notion_bot.get_database("1a23c1f9c75d427f925b83a9f220f9af")
+
     bulletins, homeworks, materials = await fetch_all_eeclass_data(account, password)
-    await update_all_bulletin_info_to_notion_db(bulletins, bulletin_db)
-    await update_all_homework_info_to_notion_db(homeworks, homework_db)
-    await update_all_material_info_to_notion_db(materials, material_db)
+    print(len(materials))
+
+    # await update_all_bulletin_info_to_notion_db(bulletins, bulletin_db)
+    # await update_all_homework_info_to_notion_db(homeworks, homework_db)
+    # await update_all_material_info_to_notion_db(materials, material_db)
 
 
 if __name__ == '__main__':

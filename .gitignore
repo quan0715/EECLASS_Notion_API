@@ -1,8 +1,14 @@
-.venv/
+/venv
 .env
 .test.py
 .idea/
 __pycache__
 *.pdf
 *.zip
-
+Lib
+Scripts
+*.cfg
+/build
+/dist
+/eeclass_bot.egg-info
+course_info.json

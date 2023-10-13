@@ -10,7 +10,6 @@ from eeclass_bot.EEMaterial import EEMaterial
 
 
 class EECourse:
-
     def __init__(self, bot, name: str, index: str):
         self.bot = bot
         self.name = name
@@ -22,7 +21,7 @@ class EECourse:
         self.homework_list_url = EEConfig.get_index_url(EEConfig.HOMEWORK_LIST, index)
         self.homeworks_url = []
         self.homeworks = []
-        self.material_url = EEConfig.get_index_url(EEConfig.HOMEWORK_LIST, index)
+        self.material_url = EEConfig.get_index_url(EEConfig.MATERIAL_URL, index)
         self.materials = []
 
     def __repr__(self):
@@ -101,8 +100,7 @@ class EECourse:
                     if " ".join(material['class']) == "xtree-node type- clearfix":
                         type = EEConfig.CLASS_NAME_TO_MATERIAL_TYPE[' '.join(material.select_one(
                             "div.header.hover.hover > div.center-part > span.xtree-node-label > div.icon.pull-left > "
-                            "span")[
-                                                                        'class'])]
+                            "span")['class'])]
                         link = material.select(
                             "div.header.hover.hover > div.center-part > span.xtree-node-label > div.text > div.node-title > div.fs-singleLineText > div")[
                             1].select_one('a')['href']
@@ -142,5 +140,3 @@ class EECourse:
                     )
                 )
             return self.materials
-
-

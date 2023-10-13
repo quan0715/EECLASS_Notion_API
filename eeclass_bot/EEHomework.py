@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 
 from eeclass_bot.EEConfig import EEConfig
+from eeclass_bot.models.Homework import Homework
 
 
 class EEHomework:
@@ -10,12 +11,12 @@ class EEHomework:
         self.index = link.split('/')[-1]
         self.course = course
         self.url = EEConfig.get_index_url(EEConfig.HOMEWORK_URL, self.index)
-        self.details = {}
+        self.details = None
 
     def __repr__(self):
         return f"{self.course.name} : {self.title}"
 
-    async def retrieve(self) -> dict:
+    async def retrieve(self) -> Homework:
         async with self.bot.session.get(self.url, headers=EEConfig.HEADERS) as resp:
             soup = BeautifulSoup(await resp.text(), 'lxml')
             dl = soup.select("dl")
@@ -39,7 +40,7 @@ class EEHomework:
                         continue
                 results[t.text] = c.text
 
-            self.details = dict(
+            self.details = Homework(
                 title=self.title,
                 url=self.url,
                 course=self.course.name,

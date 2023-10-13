@@ -3,6 +3,9 @@ import re
 from bs4 import BeautifulSoup
 
 from eeclass_bot.EEConfig import EEConfig
+from eeclass_bot.models.Bulletin import Bulletin
+from eeclass_bot.models.BulletinContent import BulletinContent
+from eeclass_bot.models.Date import Date
 
 
 class EEBulletin:
@@ -14,12 +17,12 @@ class EEBulletin:
         self.title = title
         self.index = re.search(pattern=self.exp, string=self.link).group(1)
         self.url = EEConfig.get_index_url(EEConfig.BASE_URL, link)
-        self.details = {}
+        self.details = None
 
     def __repr__(self):
         return f"{self.title}"
 
-    async def retrieve(self):
+    async def retrieve(self) -> Bulletin:
         async with self.bot.session.get(self.url, headers=EEConfig.HEADERS) as resp:
             soup = BeautifulSoup(await resp.text(), 'lxml')
             detail = soup.select('div.modal-iframe-ext2')[0].text
@@ -30,7 +33,7 @@ class EEBulletin:
                 for l in c.findAll('a'):
                     try:
                         if not l['href'].startswith('https://'):
-                                l['href'] = "https://ncueeclass.ncu.edu.tw" + l['href']
+                            l['href'] = "https://ncueeclass.ncu.edu.tw" + l['href']
                         else:
                             link.append({'名稱': l.text, '連結': l['href']})
                     except:
@@ -44,17 +47,23 @@ class EEBulletin:
             if len(date.split('-')) == 2:
                 date = "2023-" + date
                 # TODO 動態抓取今年年份
-            result = {
-                'type': '公告',
-                'url': self.url,
-                'title': self.title,
-                'date': {'start': f"{date}"},
-                'ID': self.index,
-                'course': detail[2].strip(' '),
-                '發佈人': detail[3].strip(' by '),
-                'content': {'公告內容': content, '附件': attach, '連結': link},
-                '人氣': detail[0].split(' ')[1],
-            }
+            result = Bulletin(
+                type='公告',
+                url=self.url,
+                title=self.title,
+                date=Date(
+                    start=f"{date}"
+                ),
+                ID=self.index,
+                course=detail[2].strip(' '),
+                announcer=detail[3].strip(' by '),
+                content=BulletinContent(
+                    content=content,
+                    attach=attach,
+                    link=link,
+                ),
+                popular=detail[0].split(' ')[1],
+            )
             print(f"EECLASS BOT (fetch) : {self.title}")
             self.details = result
             return result

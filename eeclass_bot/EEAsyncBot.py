@@ -13,10 +13,7 @@ from eeclass_bot.EEBulletin import EEBulletin
 from eeclass_bot.EEMaterial import EEMaterial
 
 
-
-
 class EEAsyncBot:
-
     def __init__(self, session, account, password):
         self.session = session
         self.account = account
@@ -52,7 +49,7 @@ class EEAsyncBot:
         code = await self.find_csrf_t_code()
         print("login ......")
         login_data = self._generate_login_data(account=self.account, password=self.password, csrf_t_code=code)
-        r = await self.session.post( EEConfig.LOGING_URL, data=login_data)
+        r = await self.session.post(EEConfig.LOGIN_URL, data=login_data)
         result = await r.text()
         result = json.loads(result)
         # print(result)
@@ -118,4 +115,3 @@ class EEAsyncBot:
         tasks = [m.retrieve() for m in self.material_list if isinstance(m, EEMaterial)]
         self.materials_detail_list = await asyncio.gather(*tasks)
         return self.materials_detail_list
-

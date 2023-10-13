@@ -12,3 +12,5 @@ Scripts
 /dist
 /eeclass_bot.egg-info
 course_info.json
+.coverage
+/htmlcov

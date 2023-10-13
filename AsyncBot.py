@@ -8,6 +8,37 @@ import asyncio
 # from aiohttp import web
 from fake_user_agent import user_agent
 import re
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+import time
+
+exist_driver = None
+
+def load_video():
+    global exist_driver
+    if exist_driver == None:
+        chrome_option = Options()
+        # chrome_option.add_argument("headless")
+        chrome_option.page_load_strategy = "eager"
+        driver = webdriver.Chrome(options=chrome_option)
+        driver.get("https://ncueeclass.ncu.edu.tw/")
+        login_button = driver.find_element(By.CLASS_NAME, "nav.navbar-nav.navbar-right").find_element(By.TAG_NAME, "span")
+        login_button.click()
+        login_form = driver.find_element(By.ID, "login_form")
+        login_form.find_element(By.NAME, "account").send_keys("109502554")
+        login_form.find_element(By.NAME, "password").send_keys("Timjack25!")
+        login_button = login_form.find_element(By.TAG_NAME, "button")
+        login_button.click()
+        time.sleep(3)
+        login_button = driver.find_element(By.CLASS_NAME, "btn.btn-default.keepLoginBtn")
+        login_button.click()
+        time.sleep(3)
+        exist_driver = driver
+    return exist_driver
+
+
+from eeclass_bot.models.BlockMaterial import BlockMaterial
 
 
 class Bot:
@@ -100,8 +131,8 @@ class Bot:
         self.material_list = []
         for course in course_material_list:
             for block in course:
-                print(block['materials'])
-                self.material_list.extend(block['materials'])
+                print(block.materials)
+                self.material_list.extend(block.materials)
         return self.material_list
     
     async def retrieve_all_bulletins_details(self):
@@ -241,9 +272,9 @@ class Course:
                         )
                         print(type,link,title,deadline,complete_condition,read_time,complete_check)
                 self.materials.append(
-                    dict(
-                        block_title = block_title,
-                        materials = block_material_list
+                    BlockMaterial(
+                        block_title=block_title,
+                        materials=block_material_list
                     )
                 )
             return self.materials
@@ -402,14 +433,27 @@ class Material:
         return f"{self.title}: {self.url}"
 
     async def retrieve(self):
+
         async with self.bot.session.get(self.url, headers=self.bot.headers) as resp:
             soup = BeautifulSoup( await resp.text(), 'lxml')
             detail_str = soup.select_one("div.ext2.fs-hint")
             content, attachments, link = "", [], []
-            if detail_str == None:
+            update_time, views, uploader, video_view, video_url = "", "", "", "", ""
+            if self.type == "video":
                 '''影片類型'''
-                pass
-            else:
+                detail_list = soup.select_one("div.module.mod_media.mod_media-detail").findAll("dd")
+                update_time = detail_list[1].text
+                views = detail_list[2].text
+                uploader = detail_list[4].text
+
+                driver = load_video()
+                driver.get(self.url)
+                video_view = driver.find_element(By.ID, "mediaBox").find_elements(By.TAG_NAME, "img")[1].get_attribute("src")
+                video_url = driver.find_element(By.ID, "mediaBox").find_element(By.TAG_NAME, "video").get_attribute("src")
+                print(video_url, video_view)
+                
+                
+            elif self.type in ["text", "pdf", "ppt"]:
                 detail_str = detail_str.text
                 exp = r"(\d+) 觀看數"
                 views = re.search(pattern=exp, string=detail_str).group(1)
@@ -417,9 +461,6 @@ class Material:
                 update_time = re.search(pattern=exp, string=detail_str).group(1)
                 exp = r"by (.+)"
                 uploader = re.search(pattern=exp, string=detail_str).group(1)
-                
-                online_links = soup.select("div.fs-block-body.list-margin > div > a")
-                online_links = [link['href'] for link in online_links]
 
                 link = []
                 content_block = soup.select_one("div#xbox-inline")
@@ -433,12 +474,11 @@ class Material:
                 else:
                     content = ""
                 attachments = content_block.select_one("div.module.mod_media.mod_media-attachList").select("div.text > a")
-                # print("attach: ",attachments)
                 attachments = [{'名稱': a.text, '連結': "https://ncueeclass.ncu.edu.tw" + a['href'], '檔案大小': a.span.text} for a in attachments]
-                content = '\n'.join([c.text for c in content])
 
-                # attachments = soup.select("div.fs-list.fs-filelist > ul > li > div.text > a")
-                # attachments = [attachment['href'] for attachment in attachments]
+                content = '\n'.join([c.text.strip('\n').strip(' ') for c in content if c.text.strip('\n').strip(' ') != ""])
+            else:
+                pass
                 
             self.details = dict(
                 title = self.title,
@@ -447,18 +487,18 @@ class Material:
                 course = self.course.name,
                 type = 'material',
                 subtype = self.type,
-                # 觀看數 = views,
-                # 更新時間 = update_time,
+                觀看數 = views,
+                更新時間 = update_time,
                 deadline = {'end': f"{self.deadline}"},
-                # 發佈者 = uploader,
+                發佈者 = uploader,
                 完成條件 = self.complete_condition,
                 完成度 = self.read_time,
                 已完成 = self.complete_check,
-                content = {'教材內容': content, '附件': attachments, '連結': link}
+                content = {'教材內容': content, '附件': attachments, '連結': link},
+                影片縮略圖 = video_view,
+                影片網址 = video_url
             )
             return self.details
-            # video =  soup.select_one("div.fs-videoWrap") if soup.select_one("div.fs-videoWrap") != None else None
-            # print(self.title, ":", video)
 
 
 

@@ -11,6 +11,7 @@ import os
 from dotenv import load_dotenv
 
 from eeclass_bot.EEAsyncBot import EEAsyncBot
+from newly import newly
 
 
 def builtin_in_notion_template(db: Database, target):
@@ -75,6 +76,33 @@ def homework_in_notion_template(db: Database, target):
 def material_in_notion_template(db: Database, target):
     complete_emoji = "✅" if target['已完成'] else "❎"
     return BaseObject(
+        parent=Parent(db),
+        properties=Properties(
+            Title=TitleValue(target['title']),
+            Course=SelectValue(target['course']),
+            ID=TextValue(target['ID']),
+            # Deadline=DateValue(NotionDate(**target['deadline'])),
+            link=UrlValue(target['url']),
+            label=SelectValue("教材")
+        ),
+        children=Children(
+            CallOutBlock(f"發佈人 {target['發佈者']}  觀看數 {target['觀看數']}  教材類型 {target['subtype']}", color=Colors.Background.green),
+            CallOutBlock(f"完成條件: {target['完成條件']}  進度: {target['完成度']}  已完成: " + complete_emoji, color=Colors.Background.red),
+            QuoteBlock(f"內容"),
+            ParagraphBlock(TextBlock(content=target['影片網址'], link=target['影片網址'])),
+            ImageBlock(target['影片縮略圖']),
+            ParagraphBlock(target['content']["教材內容"]),
+            ParagraphBlock(" "),
+            QuoteBlock(f"連結"),
+            *[ParagraphBlock(TextBlock(content=links['名稱'], link=links['連結'])) for links in
+              target['content']['連結']],
+            ParagraphBlock(" "),
+            QuoteBlock(f"附件"),
+            *[ParagraphBlock(TextBlock(content=links['名稱'], link=links['連結'])) for links in
+              target['content']['附件']],
+        ),
+    ) if target['影片縮略圖'] != "" else \
+    BaseObject(
         parent = Parent(db),
         properties = Properties(
             Title = TitleValue(target['title']),
@@ -85,8 +113,7 @@ def material_in_notion_template(db: Database, target):
             label = SelectValue("教材")
         ),
         children = Children(
-            # CallOutBlock(f"發佈人 {target['發佈者']}  觀看數 {target['觀看數']}  教材類型 {target['subtype']}", color=Colors.Background.green),
-            CallOutBlock(f"教材類型 {target['subtype']}", color=Colors.Background.green),
+            CallOutBlock(f"發佈人 {target['發佈者']}  觀看數 {target['觀看數']}  教材類型 {target['subtype']}", color=Colors.Background.green),
             CallOutBlock(f"完成條件: {target['完成條件']}  進度: {target['完成度']}  已完成: " + complete_emoji, color=Colors.Background.red),
             QuoteBlock(f"內容"),
             ParagraphBlock(target['content']["教材內容"]),
@@ -98,11 +125,12 @@ def material_in_notion_template(db: Database, target):
             QuoteBlock(f"附件"),
             *[ParagraphBlock(TextBlock(content=links['名稱'], link=links['連結'])) for links in
               target['content']['附件']],
-        )
+        ),
     )
 
+
 async def fetch_all_eeclass_data(account, password):
-    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False), cookie_jar=aiohttp.CookieJar(unsafe=True, quote_cookie=True)) as session:
         bot = EEAsyncBot(session, account, password)
         await bot.login()
         await bot.retrieve_all_course(check=True, refresh=True)
@@ -159,29 +187,31 @@ async def update_all_bulletin_info_to_notion_db(bulletins: List[Dict], db: Datab
         await asyncio.gather(*tasks)
         return newly_upload
 
+
 async def update_all_material_info_to_notion_db(materials: List[Dict], db: Database):
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
         object_index = get_id_col(db.query())
         newly_upload = []
         tasks = []
         for r in materials:
-            if r != None and r['ID'] not in object_index:
+            if r is not None and r['ID'] not in object_index:
                 newly_upload.append(f"upload material : {r['title']} to material database")
                 tasks.append(db.async_post(material_in_notion_template(db, r), session))
         await asyncio.gather(*tasks)
         return newly_upload
 
+
 async def run():
     load_dotenv()
-    # auth = os.getenv("NOTION_AUTH")
+    auth = os.getenv("NOTION_AUTH")
     account = os.getenv("ACCOUNT")
     password = os.getenv("PASSWORD")
-
-    #notion_bot = Notion(auth)
-    #homework_db: Database = notion_bot.get_database("1a23c1f9c75d427f925b83a9f220f9af")
-    # bulletin_db: Database = notion_bot.get_database("1a23c1f9c75d427f925b83a9f220f9af")
-    # material_db: Database = notion_bot.get_database("1a23c1f9c75d427f925b83a9f220f9af")
-
+    database_id = os.getenv("DATABASE")
+    notion_bot = Notion(auth)
+    homework_db: Database = notion_bot.get_database(database_id)
+    bulletin_db: Database = notion_bot.get_database(database_id)
+    material_db: Database = notion_bot.get_database(database_id)
+    new_obj = newly()
     bulletins, homeworks, materials = await fetch_all_eeclass_data(account, password)
 
 

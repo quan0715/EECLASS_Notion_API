@@ -8,8 +8,10 @@ import time
 from eeclass_bot.EEConfig import EEConfig
 from eeclass_bot.models.Deadline import Deadline
 from eeclass_bot.models.Material import Material
+from eeclass_bot.models.MaterialContent import MaterialContent
 
 exist_driver = None
+
 
 def load_video():
     global exist_driver
@@ -70,7 +72,6 @@ class EEMaterial:
                 video_url = driver.find_element(By.ID, "mediaBox").find_element(By.TAG_NAME, "video").get_attribute("src")
                 print(video_url, video_view)
                 
-                
             elif self.type in ["text", "pdf", "ppt"]:
                 detail_str = detail_str.text
                 exp = r"(\d+) 觀看數"
@@ -110,6 +111,13 @@ class EEMaterial:
                 announcer=announcer,
                 complete_condition=self.complete_condition,
                 read_time=self.read_time,
-                complete_check=self.complete_check
+                complete_check=self.complete_check,
+                content=MaterialContent(
+                    content=content,
+                    attachments=attachments,
+                    link=link
+                ),
+                video_view=video_view,
+                video_url=video_url
             )
             return self.details

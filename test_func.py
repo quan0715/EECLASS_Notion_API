@@ -5,7 +5,7 @@ import pytest
 from unittest import mock
 from NotionBot.base import Database
 from unittest.mock import AsyncMock
-from asynctest import CoroutineMock
+# from asynctest import CoroutineMock
 
 # @pytest.mark.asyncio_cooperative
 # async def test_login():
@@ -59,7 +59,9 @@ from asynctest import CoroutineMock
 async def test_update_all_bulletin_info_to_notion_db(mock_get_id_col, mock_db, mock_post):
     bulletins = [{'type': '公告', 'url': 'https://ncueeclass.ncu.edu.tw/bulletin/content/?id=87232&pageId=course.21793&_lock=id%2CpageId&ajaxAuth=388728611f3bd1cb5bc5418a8eea316b', 'title': '分組囉', 'date': {'start': '2023-10-02'}, 'ID': '87232', 'course': '電腦攻擊與防禦 The Attack and Defense of Computers', '發佈人': '羅傳郡', 'content': {'公告內容': '各位有修課的同學們大家好：\n\n這堂課預計會做兩次小project,都是三人為一組,可以自行找組員加入,可以在eeclass中的組員選單中加入你們分好的隊伍中\n\n感謝你們,\n羅傳郡', '附件': [], '連結': []}, '人氣': '370'}, {'type': '公告', 'url': 'https://ncueeclass.ncu.edu.tw/bulletin/content/?id=87855&pageId=course.23712&_lock=id%2CpageId&ajaxAuth=3ef9c6f86c9051ac570814c6fac9feb8', 'title': 'Week4 lab3 補交相關事項', 'date': {'start': '2023-10-09'}, 'ID': '87855', 'course': '軟體工程實務 Software engineering practices', '發佈人': '沈廷勳', 'content': {'公告內容': '助教已經將各位的學習狀況以及建議看完了,首先謝謝各位同學耐心的提供看法,這些建議我也整理完並告訴老師了,老師可能會依據這些建議想一下如何重新安排lab3的課程。\n\n關於補交的部分,請同學於10/15 23:59前上傳,成績將會乘上75%(如果全對,該題即為75分),若未上傳者,將以0分計算。', '附件': [], '連結': []}, '人氣': '31'}]
     mock_db_instance = mock_db.return_value
-    mock_post.return_value = asyncio.Future(CoroutineMock())
+    # mockresponse = CoroutineMock()
+    # mockresponse.status = 200
+    # mock_post.return_value = asyncio.Future()
     upload = await update_all_bulletin_info_to_notion_db(bulletins, mock_db_instance)
     assert upload == ['upload bulletin : Week4 lab3 補交相關事項 to bulletin database']
 

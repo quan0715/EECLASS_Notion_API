@@ -2,7 +2,9 @@ import re
 
 from bs4 import BeautifulSoup
 
-from EEConfig import EEConfig
+from eeclass_bot.EEConfig import EEConfig
+from eeclass_bot.models.Deadline import Deadline
+from eeclass_bot.models.Material import Material
 
 
 class EEMaterial:
@@ -18,15 +20,16 @@ class EEMaterial:
         self.complete_condition = complete_condition
         self.read_time = read_time
         self.complete_check = complete_check
+        self.details = None
 
     def __repr__(self) -> str:
         return f"{self.title}: {self.url}"
 
-    async def retrieve(self):
+    async def retrieve(self) -> Material:
         async with self.bot.session.get(self.url, headers=EEConfig.HEADERS) as resp:
             soup = BeautifulSoup(await resp.text(), 'lxml')
             detail_str = soup.select_one("div.ext2.fs-hint")
-            if detail_str == None:
+            if detail_str is None:
                 '''影片類型'''
                 pass
             else:
@@ -36,27 +39,29 @@ class EEMaterial:
                 exp = r"更新時間 (.+),"
                 update_time = re.search(pattern=exp, string=detail_str).group(1)
                 exp = r"by (.+)"
-                uploader = re.search(pattern=exp, string=detail_str).group(1)
+                announcer = re.search(pattern=exp, string=detail_str).group(1)
 
                 online_links = soup.select("div.fs-block-body.list-margin > div > a")
                 online_links = [link['href'] for link in online_links]
                 attachments = soup.select("div.fs-list.fs-filelist > ul > li > div.text > a")
                 attachments = [attachment['href'] for attachment in attachments]
 
-            self.details = dict(
+            self.details = Material(
                 title=self.title,
                 ID=self.url.split('/')[-1],
                 url=self.url,
                 course=self.course.name,
                 type='material',
                 subtype=self.type,
-                # 觀看數 = views,
-                # 更新時間 = update_time,
-                deadline={'end': f"{self.deadline}"},
-                # 發佈者 = uploader,
-                完成條件=self.complete_condition,
-                完成度=self.read_time,
-                已完成=self.complete_check
+                views=views,
+                update_time=update_time,
+                deadline=Deadline(
+                    end=f"{self.deadline}"
+                ),
+                announcer=announcer,
+                complete_condition=self.complete_condition,
+                read_time=self.read_time,
+                complete_check=self.complete_check
             )
             return self.details
             # video =  soup.select_one("div.fs-videoWrap") if soup.select_one("div.fs-videoWrap") != None else None

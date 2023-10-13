@@ -38,6 +38,8 @@ def load_video():
     return exist_driver
 
 
+from eeclass_bot.models.BlockMaterial import BlockMaterial
+
 
 class Bot:
     BASE_URL = "https://ncueeclass.ncu.edu.tw"
@@ -129,8 +131,8 @@ class Bot:
         self.material_list = []
         for course in course_material_list:
             for block in course:
-                print(block['materials'])
-                self.material_list.extend(block['materials'])
+                print(block.materials)
+                self.material_list.extend(block.materials)
         return self.material_list
     
     async def retrieve_all_bulletins_details(self):
@@ -270,9 +272,9 @@ class Course:
                         )
                         print(type,link,title,deadline,complete_condition,read_time,complete_check)
                 self.materials.append(
-                    dict(
-                        block_title = block_title,
-                        materials = block_material_list
+                    BlockMaterial(
+                        block_title=block_title,
+                        materials=block_material_list
                     )
                 )
             return self.materials

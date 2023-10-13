@@ -9,7 +9,7 @@ class EEConfig:
     HOMEWORK_LIST = f"{BASE_URL}course/homeworkList/"
     BULLETIN_URL = f"{BASE_URL}course/bulletin/"
     MATERIAL_URL = f"{BASE_URL}course/material/"
-    LOGING_URL = f"{BASE_URL}index/login/"
+    LOGIN_URL = f"{BASE_URL}index/login/"
 
     HEADERS = {
         "Accept": "application/json, text/javascript, */*; q=0.01",

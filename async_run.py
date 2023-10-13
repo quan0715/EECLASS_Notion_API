@@ -72,16 +72,16 @@ def homework_in_notion_template(db: Database, target):
 def material_in_notion_template(db: Database, target):
     complete_emoji = "✅" if target['已完成'] else "❎"
     return BaseObject(
-        parent = Parent(db),
-        properties = Properties(
-            Title = TitleValue(target['title']),
-            Course = SelectValue(target['course']),
-            ID = TextValue(target['ID']),
-            # Deadline = DateValue(NotionDate(**target['deadline'])),
-            link = UrlValue(target['url']),
-            label = SelectValue("教材")
+        parent=Parent(db),
+        properties=Properties(
+            Title=TitleValue(target['title']),
+            Course=SelectValue(target['course']),
+            ID=TextValue(target['ID']),
+            # Deadline=DateValue(NotionDate(**target['deadline'])),
+            link=UrlValue(target['url']),
+            label=SelectValue("教材")
         ),
-        children = Children(
+        children=Children(
             CallOutBlock(f"發佈人 {target['發佈者']}  觀看數 {target['觀看數']}  教材類型 {target['subtype']}", color=Colors.Background.green),
             CallOutBlock(f"完成條件: {target['完成條件']}  進度: {target['完成度']}  已完成: " + complete_emoji, color=Colors.Background.red),
             QuoteBlock(f"內容"),
@@ -123,6 +123,7 @@ def material_in_notion_template(db: Database, target):
               target['content']['附件']],
         ),
     )
+
 
 async def fetch_all_eeclass_data(account, password):
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False), cookie_jar=aiohttp.CookieJar(unsafe=True, quote_cookie=True)) as session:
@@ -182,17 +183,19 @@ async def update_all_bulletin_info_to_notion_db(bulletins: List[Dict], db: Datab
         await asyncio.gather(*tasks)
         return newly_upload
 
+
 async def update_all_material_info_to_notion_db(materials: List[Dict], db: Database):
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
         object_index = get_id_col(db.query())
         newly_upload = []
         tasks = []
         for r in materials:
-            if r != None and r['ID'] not in object_index:
+            if r is not None and r['ID'] not in object_index:
                 newly_upload.append(f"upload material : {r['title']} to material database")
                 tasks.append(db.async_post(material_in_notion_template(db, r), session))
         await asyncio.gather(*tasks)
         return newly_upload
+
 
 async def run():
     load_dotenv()

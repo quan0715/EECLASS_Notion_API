@@ -21,8 +21,10 @@ class EEAsyncBot:
         self.courses_list: List[EECourse] = []
         self.bulletins_list: List[EEBulletin] = []
         self.homeworks_list: List[EEHomework] = []
-        self.bulletins_detail_list: List[dict] = []
-        self.homeworks_detail_list: List[dict] = []
+        self.material_list: List[EEMaterial] = []
+        self.bulletins_detail_list: list = []
+        self.homeworks_detail_list: list = []
+        self.materials_detail_list: list = []
 
     def _generate_login_data(self, account: str, password: str, csrf_t_code: str):
         return {

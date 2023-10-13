@@ -17,17 +17,17 @@ exist_driver = None
 
 def load_video():
     global exist_driver
-    if exist_driver == None:
-        chrome_option = Options()
-        # chrome_option.add_argument("headless")
-        chrome_option.page_load_strategy = "eager"
-        driver = webdriver.Chrome(options=chrome_option)
+    if exist_driver is None:
+        chrome_options = Options()
+        chrome_options.add_argument("headless")
+        chrome_options.page_load_strategy = "eager"
+        driver = webdriver.Chrome(options=chrome_options)
         driver.get("https://ncueeclass.ncu.edu.tw/")
         login_button = driver.find_element(By.CLASS_NAME, "nav.navbar-nav.navbar-right").find_element(By.TAG_NAME, "span")
         login_button.click()
         login_form = driver.find_element(By.ID, "login_form")
-        login_form.find_element(By.NAME, "account").send_keys("109502554")
-        login_form.find_element(By.NAME, "password").send_keys("Timjack25!")
+        login_form.find_element(By.NAME, "account").send_keys(os.getenv("ACCOUNT"))
+        login_form.find_element(By.NAME, "password").send_keys(os.getenv("PASSWORD"))
         login_button = login_form.find_element(By.TAG_NAME, "button")
         login_button.click()
         time.sleep(3)
@@ -134,7 +134,7 @@ class Bot:
                 print(block.materials)
                 self.material_list.extend(block.materials)
         return self.material_list
-    
+
     async def retrieve_all_bulletins_details(self):
         tasks = [bu.retrieve() for bu in self.bulletins_list if isinstance(bu, Bulletin)]
         self.bulletins_detail_list = await asyncio.gather(*tasks)
@@ -144,7 +144,7 @@ class Bot:
         tasks = [hw.retrieve() for hw in self.homeworks_list if isinstance(hw, Homework)]
         self.homeworks_detail_list = await asyncio.gather(*tasks)
         return self.homeworks_detail_list
-    
+
     async def retrieve_all_materials_details(self):
         tasks = [m.retrieve() for m in self.material_list if isinstance(m, Material)]
         self.materials_detail_list = await asyncio.gather(*tasks)
@@ -238,7 +238,7 @@ class Course:
                     )
                 )
             return self.homeworks
-        
+
     async def get_all_material_page(self):
         async with self.bot.session.get(self.material_url, headers=self.bot.headers) as resp:
             soup = BeautifulSoup(await resp.text(), 'lxml')
@@ -451,8 +451,8 @@ class Material:
                 video_view = driver.find_element(By.ID, "mediaBox").find_elements(By.TAG_NAME, "img")[1].get_attribute("src")
                 video_url = driver.find_element(By.ID, "mediaBox").find_element(By.TAG_NAME, "video").get_attribute("src")
                 print(video_url, video_view)
-                
-                
+
+
             elif self.type in ["text", "pdf", "ppt"]:
                 detail_str = detail_str.text
                 exp = r"(\d+) 觀看數"
@@ -479,7 +479,7 @@ class Material:
                 content = '\n'.join([c.text.strip('\n').strip(' ') for c in content if c.text.strip('\n').strip(' ') != ""])
             else:
                 pass
-                
+
             self.details = dict(
                 title = self.title,
                 ID = self.url.split('/')[-1],

@@ -6,12 +6,10 @@ from selenium.webdriver.common.by import By
 import time
 
 from eeclass_bot.EEConfig import EEConfig
-<<<<<<< HEAD
-=======
+
 from eeclass_bot.models.Deadline import Deadline
 from eeclass_bot.models.Material import Material
 from eeclass_bot.models.MaterialContent import MaterialContent
->>>>>>> 0bf4fb2a67f04f78c464c24bc1303077f9b8c072
 
 exist_driver = None
 

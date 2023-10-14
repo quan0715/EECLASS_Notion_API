@@ -1,3 +1,4 @@
+import os
 import re
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -16,17 +17,17 @@ exist_driver = None
 
 def load_video():
     global exist_driver
-    if exist_driver == None:
-        chrome_option = Options()
-        # chrome_option.add_argument("headless")
-        chrome_option.page_load_strategy = "eager"
-        driver = webdriver.Chrome(options=chrome_option)
+    if exist_driver is None:
+        chrome_options = Options()
+        chrome_options.add_argument("headless")
+        chrome_options.page_load_strategy = "eager"
+        driver = webdriver.Chrome(options=chrome_options)
         driver.get("https://ncueeclass.ncu.edu.tw/")
         login_button = driver.find_element(By.CLASS_NAME, "nav.navbar-nav.navbar-right").find_element(By.TAG_NAME, "span")
         login_button.click()
         login_form = driver.find_element(By.ID, "login_form")
-        login_form.find_element(By.NAME, "account").send_keys("109502554")
-        login_form.find_element(By.NAME, "password").send_keys("Timjack25!")
+        login_form.find_element(By.NAME, "account").send_keys(os.getenv("ACCOUNT"))
+        login_form.find_element(By.NAME, "password").send_keys(os.getenv("PASSWORD"))
         login_button = login_form.find_element(By.TAG_NAME, "button")
         login_button.click()
         time.sleep(3)

@@ -169,7 +169,12 @@ async def fetch_all_eeclass_data(account, password):
 #     }
 
 def get_id_col(db_col: List[Dict]) -> List[str]:
-    return [p['properties']['ID']['rich_text'][0]['plain_text'] for p in db_col]
+    cols = []
+    for p in db_col:
+        rich_text = p['properties']['ID']['rich_text']
+        if len(rich_text) > 0:
+            cols.append(rich_text[0]['plain_text'])
+    return cols
 
 
 async def update_all_homework_info_to_notion_db(homeworks: List[Homework], db: Database):
@@ -178,8 +183,8 @@ async def update_all_homework_info_to_notion_db(homeworks: List[Homework], db: D
         newly_upload = []
         tasks = []
         for r in homeworks:
-            if r.ID not in object_index:
-                newly_upload.append(f"upload homework : {r.title} to homework database")
+            if object_index is not None and r['ID'] not in object_index:
+                newly_upload.append(f"upload homework : {r['title']} to homework database")
                 tasks.append(db.async_post(homework_in_notion_template(db, r), session))
         await asyncio.gather(*tasks)
         return newly_upload
@@ -191,8 +196,8 @@ async def update_all_bulletin_info_to_notion_db(bulletins: List[Bulletin], db: D
         newly_upload = []
         tasks = []
         for r in bulletins:
-            if r.ID not in object_index:
-                newly_upload.append(f"upload bulletin : {r.title} to bulletin database")
+            if object_index is not None and r['ID'] not in object_index:
+                newly_upload.append(f"upload bulletin : {r['title']} to bulletin database")
                 tasks.append(db.async_post(builtin_in_notion_template(db, r), session))
         await asyncio.gather(*tasks)
         return newly_upload
@@ -204,8 +209,8 @@ async def update_all_material_info_to_notion_db(materials: List[Material], db: D
         newly_upload = []
         tasks = []
         for r in materials:
-            if r is not None and r.ID not in object_index:
-                newly_upload.append(f"upload material : {r.title} to material database")
+            if object_index is not None and r['ID'] not in object_index:
+                newly_upload.append(f"upload material : {r['title']} to material database")
                 tasks.append(db.async_post(material_in_notion_template(db, r), session))
         await asyncio.gather(*tasks)
         return newly_upload

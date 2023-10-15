@@ -1,7 +1,6 @@
 from typing import Dict
 
 import aiohttp
-# from AsyncBot import *
 from NotionBot import *
 from NotionBot.base.Database import *
 from NotionBot.object import *
@@ -10,12 +9,11 @@ from NotionBot.object.BlockObject import *
 import os
 from dotenv import load_dotenv
 
-
+from eeclass_bot.EEChromeDriver import EEChromeDriver
 from eeclass_bot.EEAsyncBot import EEAsyncBot
 from eeclass_bot.models.Bulletin import Bulletin
 from eeclass_bot.models.Homework import Homework
 from eeclass_bot.models.Material import Material
-from newly import newly
 
 
 def builtin_in_notion_template(db: Database, target: Bulletin):
@@ -26,8 +24,8 @@ def builtin_in_notion_template(db: Database, target: Bulletin):
             Course=SelectValue(target.course),
             ID=TextValue(target.ID),
             Announce_Date=DateValue(NotionDate(start=target.date.start)),
-            link=UrlValue(target.url),
-            label=SelectValue("公告")
+            Content=TextValue(target.content.content),
+            Link=UrlValue(target.url)
         ),
         children=Children(
             CallOutBlock(f"發佈人 {target.announcer}  人氣 {target.popular}", color=Colors.Background.green),
@@ -47,7 +45,31 @@ def builtin_in_notion_template(db: Database, target: Bulletin):
 
 
 def homework_in_notion_template(db: Database, target: Homework):
+    from datetime import datetime, timezone, timedelta
+    now = datetime.strptime(datetime.now(tz=timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M"), "%Y-%m-%d %H:%M")
     cover_file_url = "https://images.pexels.com/photos/13010695/pexels-photo-13010695.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+    date_format = '%Y-%m-%d %H:%M'
+    try:
+        target.date['start'] = datetime.strptime(target.date['start'], date_format)
+    except:
+        target.date['start'] += " 00:00"
+        target.date['start'] = datetime.strptime(target.date['start'], date_format)
+    try:
+        target.date['end'] = datetime.strptime(target.date['end'], date_format)
+    except:
+        target.date['end'] += " 23:59"
+        target.date['end'] = datetime.strptime(target.date['end'], date_format)
+    submission_status = ""
+    if target.submission_status == "檢視 / 修改我的作業":
+        submission_status = "已完成"
+    elif target.submission_status == "交作業" and (now > target.date['start'] and now < target.date['end']) or (now < target.date['start']):
+        submission_status = "未完成"
+    else:
+        submission_status = "缺交"
+
+    target.date['start'] = target.date['start'].strftime("%Y-%m-%d %H:%M")
+    target.date['end'] = target.date['end'].strftime("%Y-%m-%d %H:%M")
+
     children_list = []
     for key, value in target.content.items():
         children_list.append(QuoteBlock(TextBlock(key.capitalize()), color=Colors.Text.red))
@@ -66,11 +88,14 @@ def homework_in_notion_template(db: Database, target: Homework):
         parent=Parent(db),
         properties=Properties(
             Title=TitleValue(target.title),
+            Status=SelectValue(submission_status),
             Course=SelectValue(target.course),
             ID=TextValue(target.ID),
             Deadline=DateValue(NotionDate(**target.date)),
-            link=UrlValue(target.url),
-            label=SelectValue("作業")
+            Link=UrlValue(target.url),
+            Homework_Type=SelectValue(target.homework_type),
+            Content=TextValue(target.description_content),
+            Submission=NumberValue(target.already_submit_number)
         ),
         children=Children(*children_list),
         icon=Emoji("🐶"),
@@ -80,15 +105,23 @@ def homework_in_notion_template(db: Database, target: Homework):
 
 def material_in_notion_template(db: Database, target: Material):
     complete_emoji = "✅" if target.complete_check else "❎"
+    study_status = "已完成" if target.complete_check else "未完成"
+    material_type = "影片" if target.subtype == "video" else "文字"
     return BaseObject(
         parent=Parent(db),
         properties=Properties(
             Title=TitleValue(target.title),
             Course=SelectValue(target.course),
             ID=TextValue(target.ID),
+            Material_Type=SelectValue(material_type),
+            Content=TextValue(target.content.content),
+            Study_Status=SelectValue(study_status),
+            Goal=TextValue(target.complete_condition),
+            Read_Time=TextValue(target.read_time),
+            Announcer=TextValue(target.announcer),
+            Views=NumberValue(int(target.views)),
             # Deadline=DateValue(NotionDate(end=target.deadline.end)),
-            link=UrlValue(target.url),
-            label=SelectValue("教材")
+            Link=UrlValue(target.url)
         ),
         children=Children(
             CallOutBlock(f"發佈人 {target.announcer}  觀看數 {target.views}  教材類型 {target.subtype}",
@@ -115,9 +148,15 @@ def material_in_notion_template(db: Database, target: Material):
                 Title=TitleValue(target.title),
                 Course=SelectValue(target.course),
                 ID=TextValue(target.ID),
-                # Deadline = DateValue(NotionDate(**target['deadline'])),
-                link=UrlValue(target.url),
-                label=SelectValue("教材")
+                Material_Type=SelectValue(material_type),
+                Content=TextValue(target.content.content),
+                Study_Status=SelectValue(study_status),
+                Goal=TextValue(target.complete_condition),
+                Read_Time=TextValue(target.read_time),
+                Announcer=TextValue(target.announcer),
+                Views=NumberValue(int(target.views)),
+                # Deadline=DateValue(NotionDate(end=target.deadline.end)),
+                Link=UrlValue(target.url)
             ),
             children=Children(
                 CallOutBlock(f"發佈人 {target.announcer}  觀看數 {target.views}  教材類型 {target.subtype}",
@@ -183,8 +222,8 @@ async def update_all_homework_info_to_notion_db(homeworks: List[Homework], db: D
         newly_upload = []
         tasks = []
         for r in homeworks:
-            if object_index is not None and r['ID'] not in object_index:
-                newly_upload.append(f"upload homework : {r['title']} to homework database")
+            if object_index is not None and r.ID not in object_index:
+                newly_upload.append(f"upload homework : {r.title} to homework database")
                 tasks.append(db.async_post(homework_in_notion_template(db, r), session))
         await asyncio.gather(*tasks)
         return newly_upload
@@ -196,8 +235,8 @@ async def update_all_bulletin_info_to_notion_db(bulletins: List[Bulletin], db: D
         newly_upload = []
         tasks = []
         for r in bulletins:
-            if object_index is not None and r['ID'] not in object_index:
-                newly_upload.append(f"upload bulletin : {r['title']} to bulletin database")
+            if object_index is not None and r.ID not in object_index:
+                newly_upload.append(f"upload bulletin : {r.title} to bulletin database")
                 tasks.append(db.async_post(builtin_in_notion_template(db, r), session))
         await asyncio.gather(*tasks)
         return newly_upload
@@ -209,8 +248,8 @@ async def update_all_material_info_to_notion_db(materials: List[Material], db: D
         newly_upload = []
         tasks = []
         for r in materials:
-            if object_index is not None and r['ID'] not in object_index:
-                newly_upload.append(f"upload material : {r['title']} to material database")
+            if object_index is not None and r.ID not in object_index:
+                newly_upload.append(f"upload material : {r.title} to material database")
                 tasks.append(db.async_post(material_in_notion_template(db, r), session))
         await asyncio.gather(*tasks)
         return newly_upload
@@ -221,30 +260,18 @@ async def run():
     auth = os.getenv("NOTION_AUTH")
     account = os.getenv("ACCOUNT")
     password = os.getenv("PASSWORD")
-    database_id = os.getenv("DATABASE")
     notion_bot = Notion(auth)
-    db = notion_bot.search("EECLASS_API_TEST")
-    db_id = db['results'][0]['id']
-    homework_db: Database = notion_bot.get_database(db_id)
-    bulletin_db: Database = notion_bot.get_database(db_id)
-    material_db: Database = notion_bot.get_database(db_id)
-    new_obj = newly()
+    # db = notion_bot.search("EECLASS_API_TEST")
+    # db_id = db['results'][0]['id']
+    bulletin_db: Database = notion_bot.get_database(os.getenv("BULLETIN_DB"))
+    homework_db: Database = notion_bot.get_database(os.getenv("HOMEWORK_DB"))
+    material_db: Database = notion_bot.get_database(os.getenv("MATERIAL_DB"))
     bulletins, homeworks, materials = await fetch_all_eeclass_data(account, password)
 
     await update_all_bulletin_info_to_notion_db(bulletins, bulletin_db)
-    # await update_all_homework_info_to_notion_db(homeworks, homework_db)
-    # await update_all_material_info_to_notion_db(materials, material_db)
-    #
-    # notion_bot = Notion(auth)
-    # homework_db: Database = notion_bot.get_database("1a23c1f9c75d427f925b83a9f220f9af")
-    # bulletin_db: Database = notion_bot.get_database("1a23c1f9c75d427f925b83a9f220f9af")
-    # material_db: Database = notion_bot.get_database("1a23c1f9c75d427f925b83a9f220f9af")
-    # new_obj = newly()
-    # bulletins, homeworks, materials = await fetch_all_eeclass_data(account, password)
-    # new_obj.extend_newly_upload(await update_all_bulletin_info_to_notion_db(bulletins, bulletin_db))
-    # new_obj.extend_newly_upload(await update_all_homework_info_to_notion_db(homeworks, homework_db))
-    # new_obj.extend_newly_upload(await update_all_material_info_to_notion_db(materials, material_db))
-    # print(new_obj.get_newly_upload())
+    await update_all_homework_info_to_notion_db(homeworks, homework_db)
+    await update_all_material_info_to_notion_db(materials, material_db)
+    EEChromeDriver.close_driver()
 
 
 if __name__ == '__main__':

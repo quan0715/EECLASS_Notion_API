@@ -2,10 +2,9 @@ import asyncio
 import json
 from typing import List
 
-import aiohttp
 from bs4 import BeautifulSoup
-from fake_user_agent import user_agent
 
+from eeclass_bot.EEChromeDriver import EEChromeDriver
 from eeclass_bot.EEConfig import EEConfig
 from eeclass_bot.EECourse import EECourse
 from eeclass_bot.EEHomework import EEHomework
@@ -70,6 +69,7 @@ class EEAsyncBot:
         await self.retrieve_all_bulletins_details()
         await self.retrieve_all_material()
         await self.retrieve_all_materials_details()
+        EEChromeDriver.close_driver()
 
     async def retrieve_all_course(self, refresh: bool = False, check: bool = False):
         self.courses_list = await EECourse.retrieve_all(self, refresh, check)
@@ -99,8 +99,8 @@ class EEAsyncBot:
         self.material_list = []
         for course in course_material_list:
             for block in course:
-                print(block['materials'])
-                self.material_list.extend(block['materials'])
+                print(block.materials)
+                self.material_list.extend(block.materials)
         return self.material_list
     
     async def retrieve_all_bulletins_details(self):
@@ -114,6 +114,6 @@ class EEAsyncBot:
         return self.homeworks_detail_list
     
     async def retrieve_all_materials_details(self):
-        tasks = [m.retrieve() for m in self.material_list if isinstance(m, EEMaterial)]
+        tasks = [m.retrieve() for m in self.material_list if isinstance(m, EEMaterial) and m.type != "homework"]
         self.materials_detail_list = await asyncio.gather(*tasks)
         return self.materials_detail_list

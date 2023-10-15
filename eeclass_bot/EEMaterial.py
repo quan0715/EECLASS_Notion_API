@@ -1,10 +1,7 @@
-import os
 import re
 from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-import time
+from eeclass_bot.EEChromeDriver import EEChromeDriver
 
 from eeclass_bot.EEConfig import EEConfig
 
@@ -12,30 +9,6 @@ from eeclass_bot.models.Deadline import Deadline
 from eeclass_bot.models.Material import Material
 from eeclass_bot.models.MaterialContent import MaterialContent
 
-exist_driver = None
-
-
-def load_video():
-    global exist_driver
-    if exist_driver is None:
-        chrome_options = Options()
-        chrome_options.add_argument("headless")
-        chrome_options.page_load_strategy = "eager"
-        driver = webdriver.Chrome(options=chrome_options)
-        driver.get("https://ncueeclass.ncu.edu.tw/")
-        login_button = driver.find_element(By.CLASS_NAME, "nav.navbar-nav.navbar-right").find_element(By.TAG_NAME, "span")
-        login_button.click()
-        login_form = driver.find_element(By.ID, "login_form")
-        login_form.find_element(By.NAME, "account").send_keys(os.getenv("ACCOUNT"))
-        login_form.find_element(By.NAME, "password").send_keys(os.getenv("PASSWORD"))
-        login_button = login_form.find_element(By.TAG_NAME, "button")
-        login_button.click()
-        time.sleep(3)
-        login_button = driver.find_element(By.CLASS_NAME, "btn.btn-default.keepLoginBtn")
-        login_button.click()
-        time.sleep(3)
-        exist_driver = driver
-    return exist_driver
 
 class EEMaterial:
     # BaseURL = "https://ncueeclass.ncu.edu.tw"
@@ -60,15 +33,15 @@ class EEMaterial:
             soup = BeautifulSoup( await resp.text(), 'lxml')
             detail_str = soup.select_one("div.ext2.fs-hint")
             content, attachments, link = "", [], []
-            update_time, views, uploader, video_view, video_url = "", "", "", "", ""
+            update_time, views, announcer, video_view, video_url = "", "", "", "", ""
             if self.type == "video":
                 '''影片類型'''
                 detail_list = soup.select_one("div.module.mod_media.mod_media-detail").findAll("dd")
                 update_time = detail_list[1].text
                 views = detail_list[2].text
-                uploader = detail_list[4].text
+                announcer = detail_list[4].text
 
-                driver = load_video()
+                driver = EEChromeDriver.get_driver()
                 driver.get(self.url)
                 video_view = driver.find_element(By.ID, "mediaBox").find_elements(By.TAG_NAME, "img")[1].get_attribute("src")
                 video_url = driver.find_element(By.ID, "mediaBox").find_element(By.TAG_NAME, "video").get_attribute("src")
@@ -97,7 +70,7 @@ class EEMaterial:
                 attachments = content_block.select_one("div.module.mod_media.mod_media-attachList").select("div.text > a")
                 attachments = [{'名稱': a.text, '連結': "https://ncueeclass.ncu.edu.tw" + a['href'], '檔案大小': a.span.text} for a in attachments]
                 content = '\n'.join([c.text.strip('\n').strip(' ') for c in content if c.text.strip('\n').strip(' ') != ""])
-
+            
             self.details = Material(
                 title=self.title,
                 ID=self.url.split('/')[-1],

@@ -16,7 +16,7 @@ from eeclass_bot.models.Homework import Homework
 from eeclass_bot.models.Material import Material
 
 
-def builtin_in_notion_template(db: Database, target: Bulletin):
+def bulletin_in_notion_template(db: Database, target: Bulletin):
     return BaseObject(
         parent=Parent(db),
         properties=Properties(
@@ -237,7 +237,7 @@ async def update_all_bulletin_info_to_notion_db(bulletins: List[Bulletin], db: D
         for r in bulletins:
             if object_index is not None and r.ID not in object_index:
                 newly_upload.append(f"upload bulletin : {r.title} to bulletin database")
-                tasks.append(db.async_post(builtin_in_notion_template(db, r), session))
+                tasks.append(db.async_post(bulletin_in_notion_template(db, r), session))
         await asyncio.gather(*tasks)
         return newly_upload
 

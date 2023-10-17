@@ -99,7 +99,6 @@ class EEAsyncBot:
         self.material_list = []
         for course in course_material_list:
             for block in course:
-                print(block.materials)
                 self.material_list.extend(block.materials)
         return self.material_list
     

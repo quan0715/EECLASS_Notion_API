@@ -14,6 +14,7 @@ class EEChromeDriver():
         driver = webdriver.Chrome(options=chrome_options)
         driver.get("https://ncueeclass.ncu.edu.tw/")
         login_button = driver.find_element(By.CLASS_NAME, "nav.navbar-nav.navbar-right").find_element(By.TAG_NAME, "span")
+        time.sleep(1)
         login_button.click()
         login_form = driver.find_element(By.ID, "login_form")
         login_form.find_element(By.NAME, "account").send_keys(os.getenv("ACCOUNT"))

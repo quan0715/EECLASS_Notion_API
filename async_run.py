@@ -215,18 +215,39 @@ def get_id_col(db_col: List[Dict]) -> List[str]:
             cols.append(rich_text[0]['plain_text'])
     return cols
 
+def get_id_submission_pair(db_col: List[Dict]) -> Dict[str, str]:
+    pair = {}
+    for p in db_col:
+        rich_text = p['properties']['ID']['rich_text']
+        submission = p['properties']['Submission']
+        try:
+            pair[rich_text[0]['plain_text']] = submission['number']
+        except:
+            raise Exception("ID or Submission may be None")
+    return pair
+
 
 async def update_all_homework_info_to_notion_db(homeworks: List[Homework], db: Database):
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
         object_index = get_id_col(db.query())
-        newly_upload = []
+        id_submission_pair = get_id_submission_pair(db.query())
+        newly_upload, newly_update = [], []
         tasks = []
         for r in homeworks:
             if object_index is not None and r.ID not in object_index:
                 newly_upload.append(f"upload homework : {r.title} to homework database")
                 tasks.append(db.async_post(homework_in_notion_template(db, r), session))
+            elif object_index is not None and str(r.already_submit_number) != id_submission_pair[r.ID]:
+                newly_update.append(f"update homework : {r.title} to homework database")
+                page = db.query(
+                    query=Query(
+                        filters=PropertyFilter("ID",Text.Type.rich_text,Text.Filter.contains,r.ID)
+                    )
+                )[0]['id']
+                page = db.bot.get_page(page)
+                page.update(parent=Parent(db), properties=Properties(Submission=int(r.already_submit_number)))
         await asyncio.gather(*tasks)
-        return newly_upload
+        return newly_upload, newly_update
 
 
 async def update_all_bulletin_info_to_notion_db(bulletins: List[Bulletin], db: Database):

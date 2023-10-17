@@ -131,7 +131,6 @@ class EECourse:
                                 complete_check=complete_check
                             )
                         )
-                        print(type, link, title, deadline, complete_condition, read_time, complete_check)
                 self.materials.append(
                     BlockMaterial(
                         block_title=block_title,

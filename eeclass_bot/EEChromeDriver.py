@@ -4,6 +4,7 @@ from selenium.webdriver.common.by import By
 import time
 import os
 
+
 class EEChromeDriver():
     driver = None
 

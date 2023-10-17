@@ -1,16 +1,14 @@
+import os
 from typing import Dict
 
 import aiohttp
 from NotionBot import *
 from NotionBot.base.Database import *
-from NotionBot.object import *
 from NotionBot.object.BlockObject import *
-
-import os
 from dotenv import load_dotenv
 
-from eeclass_bot.EEChromeDriver import EEChromeDriver
 from eeclass_bot.EEAsyncBot import EEAsyncBot
+from eeclass_bot.EEChromeDriver import EEChromeDriver
 from eeclass_bot.models.Bulletin import Bulletin
 from eeclass_bot.models.Homework import Homework
 from eeclass_bot.models.Material import Material
@@ -62,7 +60,8 @@ def homework_in_notion_template(db: Database, target: Homework):
     submission_status = ""
     if target.submission_status == "檢視 / 修改我的作業":
         submission_status = "已完成"
-    elif target.submission_status == "交作業" and (now > target.date['start'] and now < target.date['end']) or (now < target.date['start']):
+    elif target.submission_status == "交作業" and (now > target.date['start'] and now < target.date['end']) or (
+            now < target.date['start']):
         submission_status = "未完成"
     else:
         submission_status = "缺交"
@@ -120,7 +119,6 @@ def material_in_notion_template(db: Database, target: Material):
             Read_Time=TextValue(target.read_time),
             Announcer=TextValue(target.announcer),
             Views=NumberValue(int(target.views)),
-            # Deadline=DateValue(NotionDate(end=target.deadline.end)),
             Link=UrlValue(target.url)
         ),
         children=Children(
@@ -155,14 +153,14 @@ def material_in_notion_template(db: Database, target: Material):
                 Read_Time=TextValue(target.read_time),
                 Announcer=TextValue(target.announcer),
                 Views=NumberValue(int(target.views)),
-                # Deadline=DateValue(NotionDate(end=target.deadline.end)),
                 Link=UrlValue(target.url)
             ),
             children=Children(
                 CallOutBlock(f"發佈人 {target.announcer}  觀看數 {target.views}  教材類型 {target.subtype}",
                              color=Colors.Background.green),
-                CallOutBlock(f"完成條件: {target.complete_condition}  進度: {target.read_time}  已完成: " + complete_emoji,
-                             color=Colors.Background.red),
+                CallOutBlock(
+                    f"完成條件: {target.complete_condition}  進度: {target.read_time}  已完成: " + complete_emoji,
+                    color=Colors.Background.red),
                 QuoteBlock(f"內容"),
                 ParagraphBlock(target.content.content),
                 ParagraphBlock(" "),
@@ -215,6 +213,7 @@ def get_id_col(db_col: List[Dict]) -> List[str]:
             cols.append(rich_text[0]['plain_text'])
     return cols
 
+
 def get_id_submission_pair(db_col: List[Dict]) -> Dict[str, str]:
     pair = {}
     for p in db_col:
@@ -241,7 +240,7 @@ async def update_all_homework_info_to_notion_db(homeworks: List[Homework], db: D
                 newly_update.append(f"update homework : {r.title} to homework database")
                 page = db.query(
                     query=Query(
-                        filters=PropertyFilter("ID",Text.Type.rich_text,Text.Filter.contains,r.ID)
+                        filters=PropertyFilter("ID", Text.Type.rich_text, Text.Filter.contains, r.ID)
                     )
                 )[0]['id']
                 page = db.bot.get_page(page)
@@ -282,8 +281,6 @@ async def run():
     account = os.getenv("ACCOUNT")
     password = os.getenv("PASSWORD")
     notion_bot = Notion(auth)
-    # db = notion_bot.search("EECLASS_API_TEST")
-    # db_id = db['results'][0]['id']
     bulletin_db: Database = notion_bot.get_database(os.getenv("BULLETIN_DB"))
     homework_db: Database = notion_bot.get_database(os.getenv("HOMEWORK_DB"))
     material_db: Database = notion_bot.get_database(os.getenv("MATERIAL_DB"))

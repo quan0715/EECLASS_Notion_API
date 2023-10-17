@@ -1,11 +1,12 @@
 import re
+
+from NotionBot.object import NotionDate
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 from eeclass_bot.EEChromeDriver import EEChromeDriver
 
 from eeclass_bot.EEConfig import EEConfig
 
-from eeclass_bot.models.Deadline import Deadline
 from eeclass_bot.models.Material import Material
 from eeclass_bot.models.MaterialContent import MaterialContent
 
@@ -45,8 +46,8 @@ class EEMaterial:
                 driver.get(self.url)
                 video_view = driver.find_element(By.ID, "mediaBox").find_elements(By.TAG_NAME, "img")[1].get_attribute("src")
                 video_url = driver.find_element(By.ID, "mediaBox").find_element(By.TAG_NAME, "video").get_attribute("src")
-                print(video_url, video_view)
-                
+                # print(video_url, video_view)
+
             elif self.type in ["text", "pdf", "ppt"]:
                 detail_str = detail_str.text
                 exp = r"(\d+) 觀看數"
@@ -59,7 +60,7 @@ class EEMaterial:
                 link = []
                 content_block = soup.select_one("div#xbox-inline")
                 content = content_block.select_one("div.module.mod_mediaDoc.mod_mediaDoc-show")
-                if content != None:
+                if content is not None:
                     for l in content.find_all("a"):
                         if not l['href'].startswith("https://"):
                             link.append({'名稱': "https://ncueeclass.ncu.edu.tw/" + l['href'], '連結': "https://ncueeclass.ncu.edu.tw/" + l['href']})
@@ -70,18 +71,17 @@ class EEMaterial:
                 attachments = content_block.select_one("div.module.mod_media.mod_media-attachList").select("div.text > a")
                 attachments = [{'名稱': a.text, '連結': "https://ncueeclass.ncu.edu.tw" + a['href'], '檔案大小': a.span.text} for a in attachments]
                 content = '\n'.join([c.text.strip('\n').strip(' ') for c in content if c.text.strip('\n').strip(' ') != ""])
-            
+
             self.details = Material(
                 title=self.title,
-                ID=self.url.split('/')[-1],
+                id=self.url.split('/')[-1],
                 url=self.url,
                 course=self.course.name,
-                type='material',
-                subtype=self.type,
+                material_type=self.type,
                 views=views,
                 update_time=update_time,
-                deadline=Deadline(
-                    end=f"{self.deadline}"
+                deadline=NotionDate(
+                    end=self.deadline if self.deadline != '-' else None
                 ),
                 announcer=announcer,
                 complete_condition=self.complete_condition,

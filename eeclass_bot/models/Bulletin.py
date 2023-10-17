@@ -1,11 +1,10 @@
 class Bulletin:
-    def __init__(self, type, url, title, date, ID, course, announcer, content, popular):
-        self.type = type
+    def __init__(self, url, title, announced_date, id, course, announcer, content, popularity):
         self.url = url
         self.title = title
-        self.date = date
-        self.ID = ID
+        self.announced_date = announced_date
+        self.id = id
         self.course = course
         self.announcer = announcer
         self.content = content
-        self.popular = popular
+        self.popularity = popularity

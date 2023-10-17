@@ -1,11 +1,11 @@
 import re
 
+from NotionBot.object import NotionDate
 from bs4 import BeautifulSoup
 
 from eeclass_bot.EEConfig import EEConfig
 from eeclass_bot.models.Bulletin import Bulletin
 from eeclass_bot.models.BulletinContent import BulletinContent
-from eeclass_bot.models.Date import Date
 
 
 class EEBulletin:
@@ -48,13 +48,12 @@ class EEBulletin:
                 date = "2023-" + date
                 # TODO 動態抓取今年年份
             result = Bulletin(
-                type='公告',
                 url=self.url,
                 title=self.title,
-                date=Date(
+                announced_date=NotionDate(
                     start=f"{date}"
                 ),
-                ID=self.index,
+                id=self.index,
                 course=detail[2].strip(' '),
                 announcer=detail[3].strip(' by '),
                 content=BulletinContent(
@@ -62,7 +61,7 @@ class EEBulletin:
                     attach=attach,
                     link=link,
                 ),
-                popular=detail[0].split(' ')[1],
+                popularity=detail[0].split(' ')[1],
             )
             print(f"EECLASS BOT (fetch) : {self.title}")
             self.details = result

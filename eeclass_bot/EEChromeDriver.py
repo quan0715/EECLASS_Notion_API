@@ -5,10 +5,11 @@ import time
 import os
 
 
-class EEChromeDriver():
+class EEChromeDriver:
     driver = None
 
-    def create_dirver():
+    @staticmethod
+    def create_driver():
         chrome_options = Options()
         # chrome_options.add_argument("--headless")
         chrome_options.page_load_strategy = "eager"
@@ -28,11 +29,13 @@ class EEChromeDriver():
         time.sleep(3)
         EEChromeDriver.driver = driver
 
+    @staticmethod
     def get_driver() -> webdriver.Chrome:
         if EEChromeDriver.driver is None:
-            EEChromeDriver.create_dirver()
+            EEChromeDriver.create_driver()
         return EEChromeDriver.driver
-    
+
+    @staticmethod
     def close_driver() -> None:
         if EEChromeDriver.driver is not None:
             EEChromeDriver.driver.close()

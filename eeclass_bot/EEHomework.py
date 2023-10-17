@@ -1,3 +1,4 @@
+from NotionBot.object import NotionDate
 from bs4 import BeautifulSoup
 import re
 
@@ -47,22 +48,24 @@ class EEHomework:
             except:
                 description_content = ""
             exp = r"(\d+)人"
-            already_submit_number = re.search(pattern=exp, string=results['已繳交']).group(1)
             submission_status = soup.select_one("div.text-center.fs-margin-default > a > span").text
+            submission_number = re.search(pattern=exp, string=results['已繳交']).group(1)
 
             self.details = Homework(
                 title=self.title,
                 url=self.url,
                 course=self.course.name,
                 course_link=self.course.url,
-                date=dict(start=results['開放繳交'], end=results['繳交期限']),
+                deadline=NotionDate(
+                    start=results['開放繳交'],
+                    end=results['繳交期限']
+                ),
                 content=results,
-                type='homework',
-                ID=self.index,
+                id=self.index,
                 homework_type=homework_type,
                 description_content=description_content,
                 submission_status=submission_status,
-                already_submit_number=int(already_submit_number)
+                submission_number=int(submission_number)
             )
             print(f"EECLASS BOT (fetch) : {self.title}")
             return self.details

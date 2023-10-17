@@ -20,13 +20,13 @@ def bulletin_in_notion_template(db: Database, target: Bulletin):
         properties=Properties(
             Title=TitleValue(target.title),
             Course=SelectValue(target.course),
-            ID=TextValue(target.ID),
-            Announce_Date=DateValue(NotionDate(start=target.date.start)),
+            ID=TextValue(target.id),
+            Announced_Date=DateValue(NotionDate(start=target.date.start)),
             Content=TextValue(target.content.content),
             Link=UrlValue(target.url)
         ),
         children=Children(
-            CallOutBlock(f"發佈人 {target.announcer}  人氣 {target.popular}", color=Colors.Background.green),
+            CallOutBlock(f"發佈人 {target.announcer}  人氣 {target.popularity}", color=Colors.Background.green),
             QuoteBlock(f"內容"),
             ParagraphBlock(target.content.content),
             ParagraphBlock(" "),
@@ -48,26 +48,24 @@ def homework_in_notion_template(db: Database, target: Homework):
     cover_file_url = "https://images.pexels.com/photos/13010695/pexels-photo-13010695.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
     date_format = '%Y-%m-%d %H:%M'
     try:
-        target.date['start'] = datetime.strptime(target.date['start'], date_format)
+        target.date.start = datetime.strptime(target.date.start, date_format)
     except:
-        target.date['start'] += " 00:00"
-        target.date['start'] = datetime.strptime(target.date['start'], date_format)
+        target.date.start += " 00:00"
+        target.date.start = datetime.strptime(target.date.start, date_format)
     try:
-        target.date['end'] = datetime.strptime(target.date['end'], date_format)
+        target.date.end = datetime.strptime(target.date.end, date_format)
     except:
-        target.date['end'] += " 23:59"
-        target.date['end'] = datetime.strptime(target.date['end'], date_format)
-    submission_status = ""
+        target.date.end += " 23:59"
+        target.date.end = datetime.strptime(target.date.end, date_format)
     if target.submission_status == "檢視 / 修改我的作業":
         submission_status = "已完成"
-    elif target.submission_status == "交作業" and (now > target.date['start'] and now < target.date['end']) or (
-            now < target.date['start']):
+    elif target.submission_status == "交作業" and target.date.start < now < target.date.end or now < target.date.start:
         submission_status = "未完成"
     else:
         submission_status = "缺交"
 
-    target.date['start'] = target.date['start'].strftime("%Y-%m-%d %H:%M")
-    target.date['end'] = target.date['end'].strftime("%Y-%m-%d %H:%M")
+    target.date.start = target.date.start.strftime("%Y-%m-%d %H:%M")
+    target.date.end = target.date.end.strftime("%Y-%m-%d %H:%M")
 
     children_list = []
     for key, value in target.content.items():
@@ -89,12 +87,12 @@ def homework_in_notion_template(db: Database, target: Homework):
             Title=TitleValue(target.title),
             Status=SelectValue(submission_status),
             Course=SelectValue(target.course),
-            ID=TextValue(target.ID),
-            Deadline=DateValue(NotionDate(**target.date)),
+            ID=TextValue(target.id),
+            Deadline=DateValue(target.date),
             Link=UrlValue(target.url),
             Homework_Type=SelectValue(target.homework_type),
             Content=TextValue(target.description_content),
-            Submission=NumberValue(target.already_submit_number)
+            Submission=NumberValue(target.submission_number)
         ),
         children=Children(*children_list),
         icon=Emoji("🐶"),
@@ -105,13 +103,13 @@ def homework_in_notion_template(db: Database, target: Homework):
 def material_in_notion_template(db: Database, target: Material):
     complete_emoji = "✅" if target.complete_check else "❎"
     study_status = "已完成" if target.complete_check else "未完成"
-    material_type = "影片" if target.subtype == "video" else "文字"
+    material_type = "影片" if target.material_type == "video" else "文字"
     return BaseObject(
         parent=Parent(db),
         properties=Properties(
             Title=TitleValue(target.title),
             Course=SelectValue(target.course),
-            ID=TextValue(target.ID),
+            ID=TextValue(target.id),
             Material_Type=SelectValue(material_type),
             Content=TextValue(target.content.content),
             Study_Status=SelectValue(study_status),
@@ -145,7 +143,7 @@ def material_in_notion_template(db: Database, target: Material):
             properties=Properties(
                 Title=TitleValue(target.title),
                 Course=SelectValue(target.course),
-                ID=TextValue(target.ID),
+                ID=TextValue(target.id),
                 Material_Type=SelectValue(material_type),
                 Content=TextValue(target.content.content),
                 Study_Status=SelectValue(study_status),
@@ -205,57 +203,61 @@ async def fetch_all_eeclass_data(account, password):
 #         "PASSWORD": table['PASSWORD'],
 #     }
 
-def get_id_col(db_col: List[Dict]) -> List[str]:
-    cols = []
-    for p in db_col:
-        rich_text = p['properties']['ID']['rich_text']
-        if len(rich_text) > 0:
-            cols.append(rich_text[0]['plain_text'])
-    return cols
-
-
-def get_id_submission_pair(db_col: List[Dict]) -> Dict[str, str]:
-    pair = {}
-    for p in db_col:
-        rich_text = p['properties']['ID']['rich_text']
-        submission = p['properties']['Submission']
+def get_all_ids(db_pages: list[Dict]) -> list[str]:
+    ids = []
+    for page in db_pages:
         try:
-            pair[rich_text[0]['plain_text']] = submission['number']
-        except:
-            raise Exception("ID or Submission may be None")
-    return pair
+            ids.append(page['properties']['ID']['rich_text'][0]['plain_text'])
+        except IndexError:
+            pass
+    return ids
 
 
-async def update_all_homework_info_to_notion_db(homeworks: List[Homework], db: Database):
+async def update_all_homework_info_to_notion_db(homeworks: list[Homework], db: Database):
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
-        object_index = get_id_col(db.query())
-        id_submission_pair = get_id_submission_pair(db.query())
+        object_index = get_all_ids(db.query())
         newly_upload, newly_update = [], []
         tasks = []
         for r in homeworks:
-            if object_index is not None and r.ID not in object_index:
-                newly_upload.append(f"upload homework : {r.title} to homework database")
-                tasks.append(db.async_post(homework_in_notion_template(db, r), session))
-            elif object_index is not None and str(r.already_submit_number) != id_submission_pair[r.ID]:
-                newly_update.append(f"update homework : {r.title} to homework database")
-                page = db.query(
-                    query=Query(
-                        filters=PropertyFilter("ID", Text.Type.rich_text, Text.Filter.contains, r.ID)
-                    )
-                )[0]['id']
-                page = db.bot.get_page(page)
-                page.update(parent=Parent(db), properties=Properties(Submission=int(r.already_submit_number)))
+            if object_index is not None:
+                if r.id not in object_index:
+                    newly_upload.append(f"upload homework : {r.title} to homework database")
+                    tasks.append(db.async_post(homework_in_notion_template(db, r), session))
+                else:
+                    newly_update.append(f"update homework : {r.title} to homework database")
+                    page = db.bot.get_page(db.query(
+                        query=Query(
+                            filters=PropertyFilter(
+                                prop="ID",
+                                filter_type=Text.Type.rich_text,
+                                condition=Text.Filter.equals,
+                                target=r.id
+                            )
+                        )
+                    )[0]['id'])
+                    # TODO: HERE IS WEIRD
+                    # page.update(
+                    #     parent=Parent(db),
+                    #     properties=Properties(
+                    #         Deadline=dict(
+                    #             start=r.deadline.start,
+                    #             end=r.deadline.end
+                    #         ),
+                    #         Content=r.content,
+                    #         Submission=int(r.submission_number)
+                    #     )
+                    # )
         await asyncio.gather(*tasks)
         return newly_upload, newly_update
 
 
 async def update_all_bulletin_info_to_notion_db(bulletins: List[Bulletin], db: Database):
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
-        object_index = get_id_col(db.query())
+        object_index = get_all_ids(db.query())
         newly_upload = []
         tasks = []
         for r in bulletins:
-            if object_index is not None and r.ID not in object_index:
+            if object_index is not None and r.id not in object_index:
                 newly_upload.append(f"upload bulletin : {r.title} to bulletin database")
                 tasks.append(db.async_post(bulletin_in_notion_template(db, r), session))
         await asyncio.gather(*tasks)
@@ -264,11 +266,11 @@ async def update_all_bulletin_info_to_notion_db(bulletins: List[Bulletin], db: D
 
 async def update_all_material_info_to_notion_db(materials: List[Material], db: Database):
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
-        object_index = get_id_col(db.query())
+        object_index = get_all_ids(db.query())
         newly_upload = []
         tasks = []
         for r in materials:
-            if object_index is not None and r.ID not in object_index:
+            if object_index is not None and r.id not in object_index:
                 newly_upload.append(f"upload material : {r.title} to material database")
                 tasks.append(db.async_post(material_in_notion_template(db, r), session))
         await asyncio.gather(*tasks)

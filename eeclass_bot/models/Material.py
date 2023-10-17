@@ -1,12 +1,11 @@
 class Material:
-    def __init__(self, title, ID, url, course, type, subtype, views, update_time, deadline, announcer,
+    def __init__(self, title, id, url, course, material_type, views, update_time, deadline, announcer,
                  complete_condition, read_time, complete_check, content, video_view, video_url):
         self.title = title
-        self.ID = ID
+        self.id = id
         self.url = url
         self.course = course
-        self.type = type
-        self.subtype = subtype
+        self.material_type = material_type
         self.views = views
         self.update_time = update_time
         self.deadline = deadline

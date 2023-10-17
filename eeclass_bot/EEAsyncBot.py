@@ -38,11 +38,9 @@ class EEAsyncBot:
         }
 
     async def find_csrf_t_code(self):
-        # print("get csrf-t code")
         resp = await self.session.get(EEConfig.BASE_URL, headers=EEConfig.HEADERS)
         soup = BeautifulSoup(await resp.text(), 'lxml')
         code = soup.select("#csrf-t > div > input[type=hidden]")
-        # print(data['csrf-t'])
         # TODO: check if code is empty
         return code[0]['value']
 
@@ -53,7 +51,6 @@ class EEAsyncBot:
         r = await self.session.post(EEConfig.LOGIN_URL, data=login_data)
         result = await r.text()
         result = json.loads(result)
-        # print(result)
         if result['ret']['status'] == 'true':
             print(f"login successfully\nwelcome {self.account}")
             return True
@@ -63,12 +60,12 @@ class EEAsyncBot:
 
     async def pipline(self):
         await self.retrieve_all_course(check=False, refresh=False)
+        # await self.retrieve_all_bulletins()
+        # await self.retrieve_all_bulletins_details()
         await self.retrieve_all_homeworks()
         await self.retrieve_all_homeworks_details()
-        await self.retrieve_all_bulletins()
-        await self.retrieve_all_bulletins_details()
-        await self.retrieve_all_material()
-        await self.retrieve_all_materials_details()
+        # await self.retrieve_all_material()
+        # await self.retrieve_all_materials_details()
         EEChromeDriver.close_driver()
 
     async def retrieve_all_course(self, refresh: bool = False, check: bool = False):
@@ -76,8 +73,6 @@ class EEAsyncBot:
         return self.courses_list
 
     async def retrieve_all_bulletins(self):
-        # tasks = [r.get_bulletin_page() for r in self.courses_list]
-        # await asyncio.gather(*tasks)
         tasks = [r.get_all_bulletin_page() for r in self.courses_list]
         course_bulletins_list = await asyncio.gather(*tasks)
         self.bulletins_list = []

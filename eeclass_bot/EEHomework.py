@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+import re
 
 from eeclass_bot.EEConfig import EEConfig
 from eeclass_bot.models.Homework import Homework
@@ -40,6 +41,15 @@ class EEHomework:
                         continue
                 results[t.text] = c.text
 
+            homework_type = results['類型']
+            try:
+                description_content = results['說明']
+            except:
+                description_content = ""
+            exp = r"(\d+)人"
+            already_submit_number = re.search(pattern=exp, string=results['已繳交']).group(1)
+            submission_status = soup.select_one("div.text-center.fs-margin-default > a > span").text
+
             self.details = Homework(
                 title=self.title,
                 url=self.url,
@@ -49,6 +59,10 @@ class EEHomework:
                 content=results,
                 type='homework',
                 ID=self.index,
+                homework_type=homework_type,
+                description_content=description_content,
+                submission_status=submission_status,
+                already_submit_number=int(already_submit_number)
             )
             print(f"EECLASS BOT (fetch) : {self.title}")
             return self.details

@@ -7,6 +7,7 @@ from eeclass_bot.EEBulletin import EEBulletin
 from eeclass_bot.EEConfig import EEConfig
 from eeclass_bot.EEHomework import EEHomework
 from eeclass_bot.EEMaterial import EEMaterial
+from eeclass_bot.models.BlockMaterial import BlockMaterial
 
 
 class EECourse:
@@ -21,7 +22,7 @@ class EECourse:
         self.homework_list_url = EEConfig.get_index_url(EEConfig.HOMEWORK_LIST, index)
         self.homeworks_url = []
         self.homeworks = []
-        self.material_url = EEConfig.get_index_url(EEConfig.MATERIAL_URL, index)
+        self.material_url = EEConfig.get_index_url(EEConfig.COURSE_URL, index)
         self.materials = []
 
     def __repr__(self):
@@ -116,9 +117,7 @@ class EECourse:
                             "div.ext-col.fs-text-nowrap.col-char4.text-center > span").text if brief_condition.select_one(
                             "div.ext-col.fs-text-nowrap.col-char4.text-center > span") != None else brief_condition.select_one(
                             "div.ext-col.fs-text-nowrap.col-char4.text-center").text
-                        complete_check = True if \
-                        brief_condition.select("div.ext-col.fs-text-nowrap.col-time.text-center")[1].select_one(
-                            "span") != None else False
+                        complete_check = True if brief_condition.select("div.ext-col.fs-text-nowrap.col-time.text-center")[1].select_one("span.font-icon.fs-text-success.item-pass.fa.fa-check-circle") != None else False
                         block_material_list.append(
                             EEMaterial(
                                 bot=self.bot,
@@ -132,9 +131,8 @@ class EECourse:
                                 complete_check=complete_check
                             )
                         )
-                        print(type, link, title, deadline, complete_condition, read_time, complete_check)
                 self.materials.append(
-                    dict(
+                    BlockMaterial(
                         block_title=block_title,
                         materials=block_material_list
                     )

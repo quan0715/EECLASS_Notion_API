@@ -13,6 +13,29 @@ from eeclass_bot.models.Bulletin import Bulletin
 from eeclass_bot.models.Homework import Homework
 from eeclass_bot.models.Material import Material
 
+def handle_date(target: dict):
+    from datetime import datetime, timezone, timedelta
+    now = datetime.strptime(datetime.now(tz=timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M"), "%Y-%m-%d %H:%M")
+    date_format = '%Y-%m-%d %H:%M'
+    try:
+        target.deadline.start = datetime.strptime(target.deadline.start, date_format)
+    except:
+        target.deadline.start += " 00:00"
+        target.deadline.start = datetime.strptime(target.deadline.start, date_format)
+    try:
+        target.deadline.end = datetime.strptime(target.deadline.end, date_format)
+    except:
+        target.deadline.end += " 23:59"
+        target.deadline.end = datetime.strptime(target.deadline.end, date_format)
+    if target.submission_status == "檢視 / 修改我的作業":
+        submission_status = "已完成"
+    elif target.submission_status == "交作業" and target.deadline.start < now < target.deadline.end or now < target.date.start:
+        submission_status = "未完成"
+    else:
+        submission_status = "缺交"
+    target.deadline.start = target.deadline.start.strftime("%Y-%m-%d %H:%M")
+    target.deadline.end = target.deadline.end.strftime("%Y-%m-%d %H:%M")
+    return target.deadline.start, target.deadline.end, submission_status
 
 def bulletin_in_notion_template(db: Database, target: Bulletin):
     return BaseObject(
@@ -21,7 +44,7 @@ def bulletin_in_notion_template(db: Database, target: Bulletin):
             Title=TitleValue(target.title),
             Course=SelectValue(target.course),
             ID=TextValue(target.id),
-            Announced_Date=DateValue(NotionDate(start=target.date.start)),
+            Announced_Date=DateValue(NotionDate(start=target.announced_date.start)),
             Content=TextValue(target.content.content),
             Link=UrlValue(target.url)
         ),
@@ -43,30 +66,8 @@ def bulletin_in_notion_template(db: Database, target: Bulletin):
 
 
 def homework_in_notion_template(db: Database, target: Homework):
-    from datetime import datetime, timezone, timedelta
-    now = datetime.strptime(datetime.now(tz=timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M"), "%Y-%m-%d %H:%M")
     cover_file_url = "https://images.pexels.com/photos/13010695/pexels-photo-13010695.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-    date_format = '%Y-%m-%d %H:%M'
-    try:
-        target.date.start = datetime.strptime(target.date.start, date_format)
-    except:
-        target.date.start += " 00:00"
-        target.date.start = datetime.strptime(target.date.start, date_format)
-    try:
-        target.date.end = datetime.strptime(target.date.end, date_format)
-    except:
-        target.date.end += " 23:59"
-        target.date.end = datetime.strptime(target.date.end, date_format)
-    if target.submission_status == "檢視 / 修改我的作業":
-        submission_status = "已完成"
-    elif target.submission_status == "交作業" and target.date.start < now < target.date.end or now < target.date.start:
-        submission_status = "未完成"
-    else:
-        submission_status = "缺交"
-
-    target.date.start = target.date.start.strftime("%Y-%m-%d %H:%M")
-    target.date.end = target.date.end.strftime("%Y-%m-%d %H:%M")
-
+    target.deadline.start, target.deadline.end, submission_status = handle_date(target)    
     children_list = []
     for key, value in target.content.items():
         children_list.append(QuoteBlock(TextBlock(key.capitalize()), color=Colors.Text.red))
@@ -88,7 +89,7 @@ def homework_in_notion_template(db: Database, target: Homework):
             Status=SelectValue(submission_status),
             Course=SelectValue(target.course),
             ID=TextValue(target.id),
-            Deadline=DateValue(target.date),
+            Deadline=DateValue(target.deadline),
             Link=UrlValue(target.url),
             Homework_Type=SelectValue(target.homework_type),
             Content=TextValue(target.description_content),
@@ -120,7 +121,7 @@ def material_in_notion_template(db: Database, target: Material):
             Link=UrlValue(target.url)
         ),
         children=Children(
-            CallOutBlock(f"發佈人 {target.announcer}  觀看數 {target.views}  教材類型 {target.subtype}",
+            CallOutBlock(f"發佈人 {target.announcer}  觀看數 {target.views}  教材類型 {target.material_type}",
                          color=Colors.Background.green),
             CallOutBlock(f"完成條件: {target.complete_condition}  進度: {target.read_time}  已完成: " + complete_emoji,
                          color=Colors.Background.red),
@@ -154,7 +155,7 @@ def material_in_notion_template(db: Database, target: Material):
                 Link=UrlValue(target.url)
             ),
             children=Children(
-                CallOutBlock(f"發佈人 {target.announcer}  觀看數 {target.views}  教材類型 {target.subtype}",
+                CallOutBlock(f"發佈人 {target.announcer}  觀看數 {target.views}  教材類型 {target.material_type}",
                              color=Colors.Background.green),
                 CallOutBlock(
                     f"完成條件: {target.complete_condition}  進度: {target.read_time}  已完成: " + complete_emoji,
@@ -235,18 +236,17 @@ async def update_all_homework_info_to_notion_db(homeworks: list[Homework], db: D
                             )
                         )
                     )[0]['id'])
-                    # TODO: HERE IS WEIRD
-                    # page.update(
-                    #     parent=Parent(db),
-                    #     properties=Properties(
-                    #         Deadline=dict(
-                    #             start=r.deadline.start,
-                    #             end=r.deadline.end
-                    #         ),
-                    #         Content=r.content,
-                    #         Submission=int(r.submission_number)
-                    #     )
-                    # )
+                    page.update(
+                        parent=Parent(db),
+                        properties=Properties(
+                            Deadline=DateValue(NotionDate(
+                                start=r.deadline.start,
+                                end=r.deadline.end
+                            )),
+                            Content=TextValue(r.description_content),
+                            Submission=NumberValue(int(r.submission_number))
+                        )
+                    )
         await asyncio.gather(*tasks)
         return newly_upload, newly_update
 

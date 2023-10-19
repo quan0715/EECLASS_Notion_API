@@ -5,6 +5,22 @@ from unittest import mock
 from NotionBot.base import Database
 from unittest.mock import Mock
 
+def test_env():
+    '''測試.env檔有填滿'''
+    load_dotenv()
+    assert isinstance(os.getenv('NOTION_AUTH'), str) == True
+    assert os.getenv('NOTION_AUTH') != ""
+    assert isinstance(os.getenv('BULLETIN_DB'), str) == True
+    assert os.getenv('BULLETIN_DB') != ""
+    assert isinstance(os.getenv('HOMEWORK_DB'), str) == True
+    assert os.getenv('HOMEWORK_DB') != ""
+    assert isinstance(os.getenv('MATERIAL_DB'), str) == True
+    assert os.getenv('MATERIAL_DB') != ""
+    assert isinstance(os.getenv('ACCOUNT'), str) == True
+    assert os.getenv('ACCOUNT') != ""
+    assert isinstance(os.getenv('PASSWORD'), str) == True
+    assert os.getenv('PASSWORD') != ""
+
 @pytest.mark.asyncio_cooperative
 async def test_login():
     '''登入測試'''
@@ -54,6 +70,57 @@ def test_get_database():
     assert isinstance(notion_bot.get_database(os.getenv("BULLETIN_DB")), Database) == False
     assert isinstance(notion_bot.get_database(os.getenv("HOMEWORK_DB")), Database) == False
     assert isinstance(notion_bot.get_database(os.getenv("MATERIAL_DB")), Database) == False
+
+def test_get_all_ids():
+    '''測試從page取得id'''
+    db_pages = [{'properties':{'ID':{'rich_text':[{'plain_text':'aaa'}, {'plain_text':'bbb'}]}}}, {'properties':{'ID':{'rich_text':[{'plain_text':'ccc'}, {'plain_text':'ddd'}]}}}]
+    result = get_all_ids(db_pages)
+    assert result == ['aaa', 'ccc']
+    db_pages = [{'properties':{'ID':{'rich_text':[{'plain_text':'aaa'}, {'plain_text':'bbb'}]}}}, {'properties':{'ID':{'rich_text':[]}}}]
+    result = get_all_ids(db_pages)
+    assert result == ['aaa']
+    with pytest.raises(Exception) as error:
+        db_pages = [{'properties':{'ID':{'rich_text':[{'plain_text':'aaa'}, {'plain_text':'bbb'}]}}}, {'properties':{'ID':{}}}]
+        result = get_all_ids(db_pages)
+    assert error.type == KeyError
+
+def test_handle_date():
+    '''測試日期與繳交狀況'''
+    target = Homework(deadline=NotionDate(start='2000-10-19 00:00', end='3000-10-20 18:00'), submission_status="檢視 / 修改我的作業",title=None, url=None, course=None, course_link=None, content=None, id=None, homework_type=None, description_content=None, submission_number=None)
+    start, end, status = handle_date(target)
+    assert start == '2000-10-19 00:00'
+    assert end == '3000-10-20 18:00'
+    assert status == "已完成"
+
+    target = Homework(deadline=NotionDate(start='2000-10-19 00:00', end='3000-10-20 18:00'), submission_status="交作業",title=None, url=None, course=None, course_link=None, content=None, id=None, homework_type=None, description_content=None, submission_number=None)
+    start, end, status = handle_date(target)
+    assert start == '2000-10-19 00:00'
+    assert end == '3000-10-20 18:00'
+    assert status == "未完成"
+
+    target = Homework(deadline=NotionDate(start='2000-10-19 00:00', end='2000-10-20 18:00'), submission_status="交作業",title=None, url=None, course=None, course_link=None, content=None, id=None, homework_type=None, description_content=None, submission_number=None)
+    start, end, status = handle_date(target)
+    assert start == '2000-10-19 00:00'
+    assert end == '2000-10-20 18:00'
+    assert status == "缺交"
+
+    target = Homework(deadline=NotionDate(start='2000-10-19 00:00', end='2000-10-20 18:00'), submission_status="檢視 / 修改我的作業",title=None, url=None, course=None, course_link=None, content=None, id=None, homework_type=None, description_content=None, submission_number=None)
+    start, end, status = handle_date(target)
+    assert start == '2000-10-19 00:00'
+    assert end == '2000-10-20 18:00'
+    assert status == "已完成"
+
+    target = Homework(deadline=NotionDate(start='3000-10-19 00:00', end='3000-10-20 18:00'), submission_status="交作業",title=None, url=None, course=None, course_link=None, content=None, id=None, homework_type=None, description_content=None, submission_number=None)
+    start, end, status = handle_date(target)
+    assert start == '3000-10-19 00:00'
+    assert end == '3000-10-20 18:00'
+    assert status == "未完成"
+
+    target = Homework(deadline=NotionDate(start='2000-10-19', end='2000-10-20'), submission_status="交作業",title=None, url=None, course=None, course_link=None, content=None, id=None, homework_type=None, description_content=None, submission_number=None)
+    start, end, status = handle_date(target)
+    assert start == '2000-10-19 00:00'
+    assert end == '2000-10-20 23:59'
+    assert status == "缺交"
 
 # @pytest.fixture
 # def mock_async_post(mocker):

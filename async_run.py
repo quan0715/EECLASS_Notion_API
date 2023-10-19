@@ -13,7 +13,7 @@ from eeclass_bot.models.Bulletin import Bulletin
 from eeclass_bot.models.Homework import Homework
 from eeclass_bot.models.Material import Material
 
-def handle_date(target: Dict) -> tuple[str, str, str]:
+def handle_date(target: Homework) -> tuple[str, str, str]:
     from datetime import datetime, timezone, timedelta
     now = datetime.strptime(datetime.now(tz=timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M"), "%Y-%m-%d %H:%M")
     date_format = '%Y-%m-%d %H:%M'
@@ -29,7 +29,7 @@ def handle_date(target: Dict) -> tuple[str, str, str]:
         target.deadline.end = datetime.strptime(target.deadline.end, date_format)
     if target.submission_status == "檢視 / 修改我的作業":
         submission_status = "已完成"
-    elif target.submission_status == "交作業" and target.deadline.start < now < target.deadline.end or now < target.date.start:
+    elif target.submission_status == "交作業" and target.deadline.start < now < target.deadline.end or now < target.deadline.start:
         submission_status = "未完成"
     else:
         submission_status = "缺交"

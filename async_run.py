@@ -13,7 +13,7 @@ from eeclass_bot.models.Bulletin import Bulletin
 from eeclass_bot.models.Homework import Homework
 from eeclass_bot.models.Material import Material
 
-def handle_date(target: dict):
+def handle_date(target: Homework) -> tuple[str, str, str]:
     from datetime import datetime, timezone, timedelta
     now = datetime.strptime(datetime.now(tz=timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M"), "%Y-%m-%d %H:%M")
     date_format = '%Y-%m-%d %H:%M'
@@ -29,7 +29,7 @@ def handle_date(target: dict):
         target.deadline.end = datetime.strptime(target.deadline.end, date_format)
     if target.submission_status == "檢視 / 修改我的作業":
         submission_status = "已完成"
-    elif target.submission_status == "交作業" and target.deadline.start < now < target.deadline.end or now < target.date.start:
+    elif target.submission_status == "交作業" and target.deadline.start < now < target.deadline.end or now < target.deadline.start:
         submission_status = "未完成"
     else:
         submission_status = "缺交"
@@ -187,6 +187,7 @@ async def fetch_all_eeclass_data(account, password):
         await bot.retrieve_all_material()
         all_material_detail = await bot.retrieve_all_materials_details()
         return all_bulletins_detail, all_homework_detail, all_material_detail
+        # return all_bulletins_detail, all_homework_detail
 
 
 # def get_config():
@@ -236,6 +237,12 @@ async def update_all_homework_info_to_notion_db(homeworks: list[Homework], db: D
                             )
                         )
                     )[0]['id'])
+                    # 以後這裡要增加update的資訊
+                    # print(page.retrieve_property_item("%3BKj%5D")['date']['start'])
+                    # print(page.retrieve_property_item("%3BKj%5D")['date']['end'])
+                    # if len(page.retrieve_property_item("%3A%60EE")) > 0:
+                    #     print(page.retrieve_property_item("%3A%60EE")['rich_text']['text'])
+                    # print(page.retrieve_property_item("l%3C%5Dt")['number'])
                     page.update(
                         parent=Parent(db),
                         properties=Properties(
@@ -296,6 +303,9 @@ async def run():
     # https://www.notion.so/b71e6d0185554d9a96979a3b5aaf8e1e?v=8f8bd6b5d0e549f99842157564ba0b2b&pvs=4
     # await update_all_bulletin_info_to_notion_db(bulletins, bulletin_db)
     # await update_all_homework_info_to_notion_db(homeworks, homework_db)
+
+    await update_all_bulletin_info_to_notion_db(bulletins, bulletin_db)
+    await update_all_homework_info_to_notion_db(homeworks, homework_db)
     await update_all_material_info_to_notion_db(materials, material_db)
     EEChromeDriver.close_driver()
 

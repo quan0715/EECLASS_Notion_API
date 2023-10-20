@@ -283,13 +283,19 @@ async def run():
     account = os.getenv("ACCOUNT")
     password = os.getenv("PASSWORD")
     notion_bot = Notion(auth)
+    notion_bot.get_user()
+    # print(notion_bot.search("EECLASS 公告")['results'][0]['id'])
     bulletin_db: Database = notion_bot.get_database(os.getenv("BULLETIN_DB"))
+    # print(bulletin_db)
     homework_db: Database = notion_bot.get_database(os.getenv("HOMEWORK_DB"))
+    # print(homework_db)
     material_db: Database = notion_bot.get_database(os.getenv("MATERIAL_DB"))
+    # print(material_db)
     bulletins, homeworks, materials = await fetch_all_eeclass_data(account, password)
-
-    await update_all_bulletin_info_to_notion_db(bulletins, bulletin_db)
-    await update_all_homework_info_to_notion_db(homeworks, homework_db)
+    # https://www.notion.so/bf4b97218fb840b0921eee5556ae1041?v=951abdff8fc64101a034e4fa4467042a&pvs=4
+    # https://www.notion.so/b71e6d0185554d9a96979a3b5aaf8e1e?v=8f8bd6b5d0e549f99842157564ba0b2b&pvs=4
+    # await update_all_bulletin_info_to_notion_db(bulletins, bulletin_db)
+    # await update_all_homework_info_to_notion_db(homeworks, homework_db)
     await update_all_material_info_to_notion_db(materials, material_db)
     EEChromeDriver.close_driver()
 

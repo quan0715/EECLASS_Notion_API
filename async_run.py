@@ -1,4 +1,4 @@
-import os
+import os, selenium
 from typing import Dict
 
 import aiohttp
@@ -37,6 +37,21 @@ def handle_date(target: Homework) -> tuple[str, str, str]:
     target.deadline.end = target.deadline.end.strftime("%Y-%m-%d %H:%M")
     return target.deadline.start, target.deadline.end, submission_status
 
+def wrap_children_list(target: Homework):
+    children_list = []
+    for key, value in target.content.items():
+        children_list.append(QuoteBlock(TextBlock(key.capitalize()), color=Colors.Text.red))
+        if key == 'attach' or key == 'link':
+            children_list.extend([
+                BulletedBlock(TextBlock(content=a['title'], link=a['link'])) for a in value
+            ])
+        else:
+            result = TextBlock.check_length_and_split(value)
+            text = [TextBlock(r) for r in result] if result else [TextBlock(value)]
+            children_list.append(ParagraphBlock(*text))
+        children_list.append(DividerBlock())
+    return children_list
+
 def bulletin_in_notion_template(db: Database, target: Bulletin):
     return BaseObject(
         parent=Parent(db),
@@ -68,19 +83,7 @@ def bulletin_in_notion_template(db: Database, target: Bulletin):
 def homework_in_notion_template(db: Database, target: Homework):
     cover_file_url = "https://images.pexels.com/photos/13010695/pexels-photo-13010695.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
     target.deadline.start, target.deadline.end, submission_status = handle_date(target)    
-    children_list = []
-    for key, value in target.content.items():
-        children_list.append(QuoteBlock(TextBlock(key.capitalize()), color=Colors.Text.red))
-        if key == 'attach' or key == 'link':
-            children_list.extend([
-                BulletedBlock(TextBlock(content=a['title'], link=a['link'])) for a in value
-            ])
-        else:
-            result = TextBlock.check_length_and_split(value)
-            text = [TextBlock(r) for r in result] if result else [TextBlock(value)]
-            children_list.append(ParagraphBlock(*text)),
-
-        children_list.append(DividerBlock()),
+    children_list = wrap_children_list(target)
 
     return BaseObject(
         parent=Parent(db),
@@ -117,7 +120,7 @@ def material_in_notion_template(db: Database, target: Material):
             Goal=TextValue(target.complete_condition),
             Read_Time=TextValue(target.read_time),
             Announcer=TextValue(target.announcer),
-            Views=NumberValue(int(target.views)),
+            Views=NumberValue(int(target.views.replace(",",""))),
             Link=UrlValue(target.url)
         ),
         children=Children(
@@ -151,7 +154,7 @@ def material_in_notion_template(db: Database, target: Material):
                 Goal=TextValue(target.complete_condition),
                 Read_Time=TextValue(target.read_time),
                 Announcer=TextValue(target.announcer),
-                Views=NumberValue(int(target.views)),
+                Views=NumberValue(int(target.views.replace(",",""))),
                 Link=UrlValue(target.url)
             ),
             children=Children(
@@ -243,18 +246,35 @@ async def update_all_homework_info_to_notion_db(homeworks: list[Homework], db: D
                     # if len(page.retrieve_property_item("%3A%60EE")) > 0:
                     #     print(page.retrieve_property_item("%3A%60EE")['rich_text']['text'])
                     # print(page.retrieve_property_item("l%3C%5Dt")['number'])
-                    page.update(
-                        parent=Parent(db),
-                        properties=Properties(
-                            Deadline=DateValue(NotionDate(
-                                start=r.deadline.start,
-                                end=r.deadline.end
-                            )),
-                            Content=TextValue(r.description_content),
-                            Submission=NumberValue(int(r.submission_number))
-                        )
-                    )
-        await asyncio.gather(*tasks)
+                    # print(db.query())
+                    # block = db.query(
+                    #     query=Query(
+                    #         filters=PropertyFilter(
+                    #             prop="ID",
+                    #             filter_type=Text.Type.rich_text,
+                    #             condition=Text.Filter.equals,
+                    #             target=r.id
+                    #         )
+                    #     )
+                    # )[0]['properties']['Content']['id']
+                    # print(db.bot.get_block(block))
+                    # children_list = wrap_children_list(r)
+                    # page.update(
+                    #     parent=Parent(db),
+                    #     properties=Properties(
+                    #         Deadline=DateValue(NotionDate(
+                    #             start=r.deadline.start,
+                    #             end=r.deadline.end
+                    #         )),
+                    #         Content=TextValue(r.description_content),
+                    #         Submission=NumberValue(int(r.submission_number))
+                    #     )
+                    # )
+                    # page.update_children(Children(*children_list))
+        try:
+            await asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION)
+        except ValueError:
+            print("No homework need to upload.")
         return newly_upload, newly_update
 
 
@@ -267,7 +287,22 @@ async def update_all_bulletin_info_to_notion_db(bulletins: List[Bulletin], db: D
             if object_index is not None and r.id not in object_index:
                 newly_upload.append(f"upload bulletin : {r.title} to bulletin database")
                 tasks.append(db.async_post(bulletin_in_notion_template(db, r), session))
-        await asyncio.gather(*tasks)
+        try:
+            await asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION)
+        except ValueError:
+            print("No bulletin need to upload.")
+        # while len(tasks) > 0:
+        #     arg_list = []
+        #     done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION)
+        #     for task in done:
+        #         try:
+        #             result = await task
+        #         except Exception as e:
+        #             arg_list.append(e.args)
+        #     tasks.clear()
+        #     for arg in arg_list:
+        #         tasks.append(db.async_post(bulletin_in_notion_template(db, Bulletin(arg[0])), session))
+        #     arg_list.clear()
         return newly_upload
 
 
@@ -280,7 +315,10 @@ async def update_all_material_info_to_notion_db(materials: List[Material], db: D
             if object_index is not None and r.id not in object_index:
                 newly_upload.append(f"upload material : {r.title} to material database")
                 tasks.append(db.async_post(material_in_notion_template(db, r), session))
-        await asyncio.gather(*tasks)
+        try:
+            await asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION)
+        except ValueError:
+            print("No material need to be upload.")
         return newly_upload
 
 
@@ -293,7 +331,17 @@ async def run():
     bulletin_db: Database = notion_bot.get_database(os.getenv("BULLETIN_DB"))
     homework_db: Database = notion_bot.get_database(os.getenv("HOMEWORK_DB"))
     material_db: Database = notion_bot.get_database(os.getenv("MATERIAL_DB"))
-    bulletins, homeworks, materials = await fetch_all_eeclass_data(account, password)
+    try:
+        bulletins, homeworks, materials = await fetch_all_eeclass_data(account, password)
+    except aiohttp.client_exceptions.ServerDisconnectedError:
+        print("Server disconnected")
+        return
+    except selenium.common.exceptions.NoSuchElementException:
+        print("Selenium error")
+        return
+    except (ConnectionResetError, aiohttp.client_exceptions.ClientConnectorError, aiohttp.client_exceptions.ClientOSError):
+        print("Connection reset by peer")
+        return
     # bulletins, homeworks = await fetch_all_eeclass_data(account, password)
 
     await update_all_bulletin_info_to_notion_db(bulletins, bulletin_db)

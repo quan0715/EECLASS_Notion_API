@@ -46,7 +46,7 @@ class EEMaterial:
                 driver.get(self.url)
                 video_view = driver.find_element(By.ID, "mediaBox").find_elements(By.TAG_NAME, "img")[1].get_attribute("src")
                 video_url = driver.find_element(By.ID, "mediaBox").find_element(By.TAG_NAME, "video").get_attribute("src")
-                # print(video_url, video_view)
+                print(video_url, video_view)
 
             elif self.type in ["text", "pdf", "ppt"]:
                 detail_str = detail_str.text

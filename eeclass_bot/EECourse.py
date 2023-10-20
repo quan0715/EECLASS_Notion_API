@@ -30,17 +30,11 @@ class EECourse:
 
     @classmethod
     async def retrieve_all(cls, bot, refresh=False, check=False):
-        if os.path.isfile("course_info.json") and not refresh:
-            with open("course_info.json", 'r') as f:
-                courses = json.load(f)
-        else:
-            url = "https://ncueeclass.ncu.edu.tw/dashboard"
-            resp = await bot.session.get(url, headers=EEConfig.HEADERS)
-            soup = BeautifulSoup(await resp.text(), 'lxml')
-            result = soup.select("div > ul > li > div > div > div> div > div.fs-label > a")
-            courses = [dict(name=r.text.strip(), index=r['href'].split('/')[-1]) for r in result]
-            with open("course_info.json", 'w') as f:
-                print(json.dumps(courses), file=f)
+        url = "https://ncueeclass.ncu.edu.tw/dashboard"
+        resp = await bot.session.get(url, headers=EEConfig.HEADERS)
+        soup = BeautifulSoup(await resp.text(), 'lxml')
+        result = soup.select("div > ul > li > div > div > div> div > div.fs-label > a")
+        courses = [dict(name=r.text.strip(), index=r['href'].split('/')[-1]) for r in result]
 
         courses_list = []
         for course in courses:

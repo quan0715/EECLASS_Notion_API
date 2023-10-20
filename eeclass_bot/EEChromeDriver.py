@@ -11,9 +11,10 @@ class EEChromeDriver:
     @staticmethod
     def create_driver():
         chrome_options = Options()
-        # chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--headless")
         chrome_options.page_load_strategy = "eager"
         driver = webdriver.Chrome(options=chrome_options)
+        driver.set_window_size(2560, 1440)
         driver.get("https://ncueeclass.ncu.edu.tw/")
         time.sleep(3)
         login_button = driver.find_element(By.CLASS_NAME, "nav.navbar-nav.navbar-right").find_element(By.TAG_NAME, "span")

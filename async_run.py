@@ -271,7 +271,10 @@ async def update_all_homework_info_to_notion_db(homeworks: list[Homework], db: D
                     #     )
                     # )
                     # page.update_children(Children(*children_list))
-        await asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION)
+        try:
+            await asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION)
+        except ValueError:
+            print("No homework need to upload.")
         return newly_upload, newly_update
 
 
@@ -284,7 +287,10 @@ async def update_all_bulletin_info_to_notion_db(bulletins: List[Bulletin], db: D
             if object_index is not None and r.id not in object_index:
                 newly_upload.append(f"upload bulletin : {r.title} to bulletin database")
                 tasks.append(db.async_post(bulletin_in_notion_template(db, r), session))
-        await asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION)
+        try:
+            await asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION)
+        except ValueError:
+            print("No bulletin need to upload.")
         # while len(tasks) > 0:
         #     arg_list = []
         #     done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION)
@@ -309,7 +315,10 @@ async def update_all_material_info_to_notion_db(materials: List[Material], db: D
             if object_index is not None and r.id not in object_index:
                 newly_upload.append(f"upload material : {r.title} to material database")
                 tasks.append(db.async_post(material_in_notion_template(db, r), session))
-        await asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION)
+        try:
+            await asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION)
+        except ValueError:
+            print("No material need to be upload.")
         return newly_upload
 
 
@@ -326,10 +335,13 @@ async def run():
         bulletins, homeworks, materials = await fetch_all_eeclass_data(account, password)
     except aiohttp.client_exceptions.ServerDisconnectedError:
         print("Server disconnected")
+        return
     except selenium.common.exceptions.NoSuchElementException:
         print("Selenium error")
-    except (ConnectionResetError, aiohttp.client_exceptions.ClientConnectorError):
+        return
+    except (ConnectionResetError, aiohttp.client_exceptions.ClientConnectorError, aiohttp.client_exceptions.ClientOSError):
         print("Connection reset by peer")
+        return
     # bulletins, homeworks = await fetch_all_eeclass_data(account, password)
 
     await update_all_bulletin_info_to_notion_db(bulletins, bulletin_db)

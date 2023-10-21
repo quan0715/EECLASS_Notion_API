@@ -315,11 +315,11 @@ async def run():
     notion_bot = Notion(auth)
     notion_bot.get_user()
     # print(notion_bot.search("EECLASS 公告")['results'][0]['id'])
-    bulletin_db: Database = notion_bot.get_database(os.getenv("BULLETIN_DB"))
-    # print(bulletin_db)
-    homework_db: Database = notion_bot.get_database(os.getenv("HOMEWORK_DB"))
-    # print(homework_db)
-    material_db: Database = notion_bot.get_database(os.getenv("MATERIAL_DB"))
+    # bulletin_db: Database = notion_bot.get_database(os.getenv("BULLETIN_DB"))
+    # # print(bulletin_db)
+    # homework_db: Database = notion_bot.get_database(os.getenv("HOMEWORK_DB"))
+    # # print(homework_db)
+    # material_db: Database = notion_bot.get_database(os.getenv("MATERIAL_DB"))
     try:
         bulletins, homeworks, materials = await fetch_all_eeclass_data(account, password)
     except aiohttp.client_exceptions.ServerDisconnectedError:
@@ -332,9 +332,9 @@ async def run():
         print("Connection reset by peer")
         return
     # bulletins, homeworks = await fetch_all_eeclass_data(account, password)
-    await update_all_bulletin_info_to_notion_db(bulletins, bulletin_db)
-    await update_all_homework_info_to_notion_db(homeworks, homework_db)
-    await update_all_material_info_to_notion_db(materials, material_db)
+    # await update_all_bulletin_info_to_notion_db(bulletins, bulletin_db)
+    # await update_all_homework_info_to_notion_db(homeworks, homework_db)
+    # await update_all_material_info_to_notion_db(materials, material_db)
     EEChromeDriver.close_driver()
 
 

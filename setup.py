@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name='eeclass_bot',
-    version='0.0.41',
+    version='0.0.5',
     author='Quan',
     author_email='quan787887@gmail.com',
     packages=find_packages(

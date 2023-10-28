@@ -59,7 +59,7 @@ def bulletin_in_notion_template(db: Database, target: Bulletin):
             Title=TitleValue(target.title),
             Course=SelectValue(target.course),
             ID=TextValue(target.id),
-            Announced_Date=DateValue(NotionDate(start=target.announced_date.start)),
+            Announced_Date=DateValue(NotionDate(start=target.announced_date.start, time_zone='Asia/Taipei')),
             Content=TextValue(target.content.content),
             Link=UrlValue(target.url)
         ),
@@ -188,9 +188,9 @@ async def fetch_all_eeclass_data(account, password):
         await bot.retrieve_all_homeworks()
         all_homework_detail = await bot.retrieve_all_homeworks_details()
         await bot.retrieve_all_material()
-        all_material_detail = await bot.retrieve_all_materials_details()
-        return all_bulletins_detail, all_homework_detail, all_material_detail
-        # return all_bulletins_detail, all_homework_detail
+        # all_material_detail = await bot.retrieve_all_materials_details()
+        # return all_bulletins_detail, all_homework_detail, all_material_detail
+        return all_bulletins_detail, all_homework_detail
 
 
 def get_all_ids(db_pages: list[Dict]) -> list[str]:
@@ -225,6 +225,12 @@ async def update_all_homework_info_to_notion_db(homeworks: list[Homework], db: D
                             )
                         )
                     )[0]['id'])
+                    # for block in page.retrieve_children():
+                    # for p in page.retrieve_children()['results']:
+                    #     if 'object' in p and p['object'] == 'block':
+                    #         if 'bulleted_list_item' in p:
+                    #             print(p['bulleted_list_item']['rich_text'][0]['plain_text'])
+                    #             print(p['bulleted_list_item']['rich_text'][0]['href'])
                     # 以後這裡要增加update的資訊
                     # print(page.retrieve_property_item("%3BKj%5D")['date']['start'])
                     # print(page.retrieve_property_item("%3BKj%5D")['date']['end'])
@@ -321,7 +327,7 @@ async def run():
     # # print(homework_db)
     # material_db: Database = notion_bot.get_database(os.getenv("MATERIAL_DB"))
     try:
-        bulletins, homeworks, materials = await fetch_all_eeclass_data(account, password)
+        bulletins, homeworks = await fetch_all_eeclass_data(account, password)
     except aiohttp.client_exceptions.ServerDisconnectedError:
         print("Server disconnected")
         return

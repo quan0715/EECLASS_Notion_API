@@ -22,7 +22,7 @@ class HomeworkAlertTool(BaseTool):
     description = "Check whether there are any homeworks that is close to end date but not submitted."
 
     @staticmethod
-    def get_alert_homework(days_left: int=1000):
+    def get_alert_homework(days_left: int=1000) -> List[str]:
         if days_left == 1000:
             return ["我也不知道誒"]
         load_dotenv()

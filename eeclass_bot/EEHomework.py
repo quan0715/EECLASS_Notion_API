@@ -58,7 +58,8 @@ class EEHomework:
                 course_link=self.course.url,
                 deadline=NotionDate(
                     start=results['開放繳交'],
-                    end=results['繳交期限']
+                    end=results['繳交期限'],
+                    time_zone='Asia/Taipei'
                 ),
                 content=results,
                 id=self.index,
